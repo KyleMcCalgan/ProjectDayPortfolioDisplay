@@ -16,17 +16,17 @@ Use this before replacing any visible placeholder in `src/data/content.js` or ad
 ## SpendSense project
 
 - [ ] Approved product description and current feature list
-- [ ] Real application screenshots with descriptive alt text
+- [ ] Review the supplied app screenshots and their descriptive alt text
 - [ ] Confirmed technology details for each feature
 - [ ] Exact contribution mapping for every developer and feature
-- [ ] Confirmed application URL and repository URL, if public
+- [x] Public application URL
+- [ ] Public source repository URL, if the team wants to share it
 - [ ] Real development milestones, descriptions, dates and optional evidence
 - [ ] Approved use of any university, partner or sponsor names and assets
 
 ## Before the public Pages deploy
 
 - [ ] Review every public photograph, CV, contact detail, repository and demo URL
-- [ ] Replace the clearly labeled interface illustration with an approved screenshot, or keep its illustration label
 - [ ] Remove any concept that is not part of the final application
 - [ ] Run `npm run build` and `npm run check`
-- [ ] Review the built pages on mobile and desktop
+- [ ] Review the published pages on mobile and desktop
