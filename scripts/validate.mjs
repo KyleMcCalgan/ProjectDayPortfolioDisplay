@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { features, members, productScreenshots } from "../src/data/content.js";
+import { features, journey, members, productScreenshots } from "../src/data/content.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "dist");
@@ -22,7 +22,15 @@ for (const feature of features) {
   }
 }
 
-const rootHtml = await fs.readFile(path.join(dist, "index.html"), "utf8");
+assert.equal(inventory.journey, `${builtBase}journey/`, "The journey route must use the configured base path.");
+assert.equal(new Set(journey.map((stop) => stop.id)).size, journey.length, "Journey stop IDs must be unique.");
+for (const stop of journey) {
+  for (const id of stop.shots) assert.ok(productScreenshots.some((screen) => screen.id === id), `Unknown screenshot ${id} on ${stop.id}.`);
+}
+const journeyHtml = await fs.readFile(path.join(dist, "journey", "index.html"), "utf8");
+assert.ok(journeyHtml.includes(`${builtBase}assets/site.css`), "Journey stylesheet must respect the base path.");
+for (const stop of journey) assert.ok(journeyHtml.includes(`id="${stop.id}-title"`), `Journey page is missing ${stop.id}.`);
+const rootHtml =await fs.readFile(path.join(dist, "index.html"), "utf8");
 const appHtml = await fs.readFile(path.join(dist, "app", "index.html"), "utf8");
 assert.ok(rootHtml.includes(`window.SITE_BASE = ${JSON.stringify(builtBase)}`), "Generated links must use the configured base path.");
 for (const html of [rootHtml, appHtml]) {

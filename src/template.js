@@ -1,4 +1,35 @@
-import { features, members, productScreenshots, site } from "./data/content.js";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
+import { features, journey, members, partners, productScreenshots, site } from "./data/content.js";
+
+const journeyImageDir = fileURLToPath(new URL("../public/assets/journey/", import.meta.url));
+
+// Images dropped into public/assets/journey/<stop id>/ replace the default screenshots.
+// Short, wide PNGs (e.g. a sign-in card) are fitted rather than cropped like tall app screens.
+function isWideImage(file) {
+  if (!file.toLowerCase().endsWith(".png")) return false;
+  try {
+    const header = fs.readFileSync(file).subarray(16, 24);
+    return header.readUInt32BE(0) / header.readUInt32BE(4) > 0.5;
+  } catch {
+    return false;
+  }
+}
+
+function journeyImages(stop) {
+  try {
+    return fs.readdirSync(`${journeyImageDir}${stop.id}`)
+      .filter((file) => /\.(png|jpe?g|webp|gif|svg)$/i.test(file))
+      .sort()
+      .map((file) => ({
+        wide: isWideImage(`${journeyImageDir}${stop.id}/${file}`),
+        image: `assets/journey/${stop.id}/${file}`,
+        alt: `${stop.title}: ${file.replace(/\.[^.]+$/, "").replace(/^\d+[-_ ]*/, "").replace(/[-_]+/g, " ")}`,
+      }));
+  } catch {
+    return [];
+  }
+}
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -21,12 +52,13 @@ const icon = (name, size = 18) => {
 function header(base, active = "team") {
   const teamCurrent = active === "team" ? ' aria-current="page"' : "";
   const appCurrent = active === "app" ? ' aria-current="page"' : "";
+  const journeyCurrent = active === "journey" ? ' aria-current="page"' : "";
   return `<header class="site-header"><div class="nav-shell wrap">
     <a class="brand" href="${pathFor(base)}" aria-label="SpendSense team page">
       <img class="brand-mark" src="${pathFor(base, "assets/favicon.svg?v=2")}" alt="" width="34" height="34"><span class="brand-name">SpendSense</span>
     </a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="${pathFor(base)}"${teamCurrent}>Team</a><a href="${pathFor(base, "app/")}"${appCurrent}>App</a>
+      <a href="${pathFor(base)}"${teamCurrent}>Team</a><a href="${pathFor(base, "app/")}"${appCurrent}>App</a><a href="${pathFor(base, "journey/")}"${journeyCurrent}>Journey</a>
     </nav>
   </div></header>`;
 }
@@ -35,7 +67,7 @@ function footer(base) {
   return `<footer class="site-footer"><div class="wrap footer-inner">
     <a class="brand footer-brand" href="${pathFor(base)}" aria-label="SpendSense team page"><img class="brand-mark" src="${pathFor(base, "assets/favicon.svg?v=2")}" alt="" width="28" height="28"><span class="brand-name">SpendSense</span></a>
     <span>Project Day team portfolio</span>
-    <a class="footer-app-link" href="${pathFor(base, "app/")}">View the app ${icon("arrow", 14)}</a>
+    <span class="footer-links"><a class="footer-app-link" href="${pathFor(base, "journey/")}">Our journey ${icon("arrow", 14)}</a><a class="footer-app-link" href="${pathFor(base, "app/")}">View the app ${icon("arrow", 14)}</a></span>
   </div></footer>`;
 }
 
@@ -114,6 +146,59 @@ function renderAppPage(base) {
   </section>`;
 
   return shell({ base, title: "Explore the SpendSense App", description: "Browse real SpendSense app screens for Home, Calendar, Simulation, Quests, Friends, and Mascot.", body, active: "app", pageData: { productScreenshots } });
+}
+
+function partnersMarkup(base, className) {
+  return `<section class="journey-partners ${className}" aria-label="Team and partners"><h2>Built by MARK2, for EPI-USE Labs &amp; Advance</h2><ul>${partners.map((partner) => `<li><span class="partner-logo"><img src="${pathFor(base, partner.image)}" alt="${escapeHtml(partner.name)} logo" loading="lazy"></span><span class="partner-note">${escapeHtml(partner.note)}</span></li>`).join("")}</ul></section>`;
+}
+
+function renderJourneyPage(base) {
+  const screenById = new Map(productScreenshots.map((screen) => [screen.id, screen]));
+  const stops = journey.map((stop, index) => {
+    const customShots = journeyImages(stop);
+    const shots = customShots.length ? customShots : stop.shots.map((id) => screenById.get(id)).filter(Boolean);
+    const media = shots.length
+      ? `<div class="journey-shots">${shots.map((shot) => `<figure class="journey-shot${shot.wide ? " is-wide" : ""}"><img src="${pathFor(base, shot.image)}" alt="${escapeHtml(shot.alt)}" loading="lazy"></figure>`).join("")}</div>`
+      : `<div class="journey-numeral" aria-hidden="true">${escapeHtml(stop.number)}</div>`;
+    const built = stop.built.length ? `<ul class="journey-built">${stop.built.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : "";
+    const challenge = stop.challenge
+      ? `<aside class="journey-challenge"><strong>Challenge: ${escapeHtml(stop.challenge.title)}</strong><p>${escapeHtml(stop.challenge.text)}</p></aside>`
+      : "";
+    const issueMeta = stop.issues ? `<span>${stop.issues} issues</span>` : "";
+    const tags = stop.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+    const partnerBlock = stop.id === "project-day" ? partnersMarkup(base, "journey-partners-inline") : "";
+    return `<div class="journey-stop journey-stop-${index + 1}" role="tabpanel" id="journey-panel-${escapeHtml(stop.id)}" aria-labelledby="journey-tab-${escapeHtml(stop.id)}" data-journey-slide>
+      <span class="journey-node" aria-hidden="true">${escapeHtml(stop.number)}</span>
+      <article class="journey-card${shots.length > 2 ? " journey-card-wide" : ""}" aria-labelledby="${escapeHtml(stop.id)}-title">
+        <div class="journey-media">${media}</div>
+        <div class="journey-copy">
+          <p class="journey-meta"><span>${escapeHtml(stop.label || `Demo ${stop.number}`)}</span><span>${escapeHtml(stop.period)}</span>${issueMeta}</p>
+          <h2 id="${escapeHtml(stop.id)}-title">${escapeHtml(stop.title)}</h2>
+          <p class="journey-tagline">${escapeHtml(stop.tagline)}</p>
+          <p>${escapeHtml(stop.summary)}</p>
+          ${built}${challenge}
+          ${tags ? `<div class="tag-row">${tags}</div>` : ""}${partnerBlock}
+        </div>
+      </article>
+    </div>`;
+  }).join("");
+
+  const tabs = journey.map((stop, index) => `<button class="journey-tab${index === 0 ? " is-active" : ""}" type="button" role="tab" id="journey-tab-${escapeHtml(stop.id)}" aria-selected="${index === 0}" aria-controls="journey-panel-${escapeHtml(stop.id)}" tabindex="${index === 0 ? "0" : "-1"}" data-journey-tab>${escapeHtml(stop.tab)}</button>`).join("");
+  const body = `<section class="page journey-page wrap" id="journey">
+    <header class="page-intro page-intro-with-mascot journey-intro">
+      <div class="page-intro-copy"><h1>Our <span>journey.</span></h1>
+      <p>Four demos, one app. See how SpendSense grew from a blank repository into what you see today.</p>
+      <a class="app-more-link" href="${pathFor(base, "app/")}">Explore the finished app ${icon("arrow", 13)}</a></div>
+      ${introMascot(base)}
+    </header>
+    <div class="journey-carousel" data-journey-carousel>
+      <nav class="journey-tabs" role="tablist" aria-label="SpendSense demos">${tabs}</nav>
+      <div class="journey-timeline" data-journey-pages>${stops}</div>
+    </div>
+    ${partnersMarkup(base, "journey-partners-footer")}
+    <p class="journey-note">Built from the project's GitHub milestones and issues.</p>
+  </section>`;
+  return shell({ base, title: "The SpendSense Journey", description: "How SpendSense was built across four demos, from foundations to simulation, receipt scanning and mascot guidance.", body, active: "journey" });
 }
 
 function profileLinks(member) {
@@ -263,6 +348,7 @@ export function renderPage(pathname, base) {
     return renderNotFound(base);
   }
   if (normalizedPath === "/app/") return renderAppPage(base);
+  if (normalizedPath === "/journey/") return renderJourneyPage(base);
   if (normalizedPath === "/") return renderTeamPage(base);
   return renderNotFound(base);
 }
@@ -272,4 +358,4 @@ export function renderNotFound(base) {
   return shell({ base, title: `Page not found | ${site.name}`, description: "This SpendSense team hub page could not be found.", body });
 }
 
-export { members, features, productScreenshots, site };
+export { members, features, journey, partners, productScreenshots, site };

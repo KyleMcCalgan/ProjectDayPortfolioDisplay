@@ -49,6 +49,9 @@ await fs.writeFile(path.join(dist, "index.html"), renderPage("/", base), "utf8")
 const appDir = path.join(dist, "app");
 await fs.mkdir(appDir, { recursive: true });
 await fs.writeFile(path.join(appDir, "index.html"), renderPage("/app/", base), "utf8");
+const journeyDir = path.join(dist, "journey");
+await fs.mkdir(journeyDir, { recursive: true });
+await fs.writeFile(path.join(journeyDir, "index.html"), renderPage("/journey/", base), "utf8");
 for (const member of members) {
   const profileDir = path.join(dist, "team", member.slug);
   await fs.mkdir(profileDir, { recursive: true });
@@ -60,6 +63,7 @@ const inventory = {
   title: site.title,
   basePath: base,
   app: `${base}app/`,
+  journey: `${base}journey/`,
   profiles: members.map((member) => `${base}team/${member.slug}/`),
 };
 await fs.writeFile(path.join(dist, "site-inventory.json"), `${JSON.stringify(inventory, null, 2)}\n`, "utf8");

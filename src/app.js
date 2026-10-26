@@ -189,3 +189,75 @@ function renderProjectImages() {
 }
 
 renderProjectImages();
+
+const journeyCarousel = document.querySelector("[data-journey-carousel]");
+if (journeyCarousel) {
+  const pages = journeyCarousel.querySelector("[data-journey-pages]");
+  const slides = Array.from(journeyCarousel.querySelectorAll("[data-journey-slide]"));
+  const tabs = Array.from(journeyCarousel.querySelectorAll("[data-journey-tab]"));
+  const swipeLayout = window.matchMedia("(max-width: 860px)");
+  let current = 0;
+
+  // Inactive slides are only hidden from assistive tech while the carousel layout is active.
+  function select(index, scroll = false) {
+    current = Math.max(0, Math.min(index, slides.length - 1));
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle("is-active", i === current);
+      tab.setAttribute("aria-selected", String(i === current));
+      tab.tabIndex = i === current ? 0 : -1;
+    });
+    slides.forEach((slide, i) => {
+      const hidden = swipeLayout.matches && i !== current;
+      slide.inert = hidden;
+      slide.setAttribute("aria-hidden", String(hidden));
+    });
+    fitHeight();
+    if (scroll && swipeLayout.matches) {
+      const left = slides[current].offsetLeft - slides[0].offsetLeft;
+      if (Math.abs(left - pages.scrollLeft) >= 1) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        pages.scrollTo({ left, behavior });
+      }
+    }
+  }
+
+  // The page scrolls normally, so the swipe area is only as tall as the demo being shown.
+  function fitHeight() {
+    pages.style.height = swipeLayout.matches ? `${slides[current].offsetHeight}px` : "";
+  }
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => fitHeight());
+    slides.forEach((slide) => observer.observe(slide));
+  }
+
+  let frame = 0;
+  pages.addEventListener("scroll", () => {
+    if (!swipeLayout.matches || frame) return;
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      const index = Math.round(pages.scrollLeft / pages.clientWidth);
+      if (index !== current) {
+        select(index);
+        if (window.scrollY > journeyCarousel.offsetTop) window.scrollTo({ top: 0, behavior: "auto" });
+      }
+    });
+  }, { passive: true });
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => {
+      select(index, true);
+      if (swipeLayout.matches && window.scrollY > journeyCarousel.offsetTop) window.scrollTo({ top: 0, behavior: "auto" });
+    });
+    tab.addEventListener("keydown", (event) => {
+      if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 :
+        (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[next].focus();
+      select(next, true);
+    });
+  });
+  swipeLayout.addEventListener("change", () => select(current, true));
+  window.addEventListener("resize", () => select(current, true));
+  select(0);
+}
