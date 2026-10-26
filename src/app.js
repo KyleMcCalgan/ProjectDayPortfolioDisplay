@@ -85,6 +85,23 @@ function updateProfileFromScroll() {
   selectProfileArea(nearestProfileIndex());
 }
 
+const profileSwipeLayout = window.matchMedia("(max-width: 860px)");
+let lastProfileIndex = 0;
+
+// On small screens the page scrolls normally, so the swipe area is only as tall as the active section.
+function fitProfileHeight(index) {
+  if (!profilePages) return;
+  profilePages.style.height = profileSwipeLayout.matches && profileSlides[index] ? `${profileSlides[index].offsetHeight}px` : "";
+}
+
+if (profilePages && "ResizeObserver" in window) {
+  const profileObserver = new ResizeObserver(() => {
+    const activeIndex = profileTabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    fitProfileHeight(Math.max(activeIndex, 0));
+  });
+  profileSlides.forEach((slide) => profileObserver.observe(slide));
+}
+
 function selectProfileArea(index, shouldScroll = false) {
   if (!profileTabs.length || !profileSlides.length) return;
   const selectedIndex = Math.max(0, Math.min(index, profileTabs.length - 1));
@@ -107,6 +124,11 @@ function selectProfileArea(index, shouldScroll = false) {
   });
 
   if (!profilePages || !profileSlides[selectedIndex]) return;
+  fitProfileHeight(selectedIndex);
+  if (selectedIndex !== lastProfileIndex) {
+    lastProfileIndex = selectedIndex;
+    if (profileSwipeLayout.matches && window.scrollY > profilePages.offsetTop) window.scrollTo({ top: 0, behavior: "auto" });
+  }
   if (shouldScroll) {
     const offset = profileSlides[selectedIndex].offsetLeft - profileSlides[0].offsetLeft;
     if (Math.abs(offset - profilePages.scrollLeft) >= 1) {

@@ -690,3 +690,29 @@ body[data-member-id] .site-footer { display: none; }
 }
 .journey-shot.is-wide { background: var(--mint); }
 .journey-shot.is-wide img, .journey-card-wide .journey-shot.is-wide img { object-fit: contain; object-position: center; }
+
+/* Team cards: photos fill a fixed-size frame so every card is the same height. */
+.member-card-photo { position: relative; height: 224px; }
+.member-photo { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; object-fit: cover; object-position: center 25%; }
+@media (max-width: 860px) { .member-card-photo { height: 204px; } }
+@media (max-width: 680px) { .member-card-photo { height: 164px; } }
+@media (min-width: 1400px) { .member-card-photo { height: 240px; } }
+
+/* Profile: on small screens the content is the page itself; only the sections swipe. */
+@media (max-width: 860px) {
+  body[data-member-id] { height: auto; overflow: visible; }
+  body[data-member-id] .site-footer { display: block; }
+  .profile-page { height: auto; min-height: 0; display: block; overflow: visible; padding: 12px 0 28px; }
+  .profile-content { display: block; }
+  .profile-tabs { position: sticky; z-index: 10; top: 68px; margin-bottom: 14px; }
+  .profile-carousel { display: block; overflow: hidden; }
+  .profile-pages { align-items: flex-start; transition: height .2s ease; }
+  .profile-slide, .profile-slide-fill { height: auto; padding: 0; }
+  .profile-slide-intro .profile-hero, .profile-section, .profile-fill-section {
+    height: auto; overflow: visible; border: 0; border-radius: 18px; box-shadow: none;
+  }
+  .profile-slide-intro .profile-hero { scrollbar-gutter: auto; }
+  .profile-section { scrollbar-gutter: auto; }
+  .profile-pager { display: none; }
+  .profile-contact .cv-actions { margin-top: 0; }
+}

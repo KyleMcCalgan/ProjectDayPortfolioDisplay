@@ -131,7 +131,6 @@ for (const member of members) {
       detail: contribution.detail,
     });
   }
-  delete member.contributions;
   delete member.order;
 }
 

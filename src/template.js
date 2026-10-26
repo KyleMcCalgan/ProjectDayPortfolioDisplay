@@ -245,16 +245,13 @@ function profileProjects(member) {
 }
 
 function profileContributions(member, base) {
-  const contributions = features.flatMap((feature) =>
-    feature.contributions
-      .filter((item) => item.memberId === member.id)
-      .map((item) => ({ feature, contribution: item })),
-  );
+  // Listed in the order written in profile.env, so the most important work comes first.
+  const contributions = member.contributions || [];
   if (!contributions.length) return '<p class="profile-empty">Confirmed SpendSense work will appear here.</p>';
-  const items = contributions.map(({ feature, contribution }, index) =>
+  const items = contributions.map((contribution, index) =>
     '<article class="contribution-item"><span class="contribution-number">' + String(index + 1).padStart(2, "0") +
     '</span><div class="contribution-copy"><h3><a href="' + pathFor(base, "app/") + '">' +
-    escapeHtml(contribution.title || feature.title) + " " + icon("arrow", 14) + "</a></h3>" +
+    escapeHtml(contribution.title) + " " + icon("arrow", 14) + "</a></h3>" +
     (contribution.role ? '<p class="contribution-role">' + escapeHtml(contribution.role) + "</p>" : "") +
     (contribution.detail ? "<p>" + escapeHtml(contribution.detail) + "</p>" : "") +
     "</div></article>",
