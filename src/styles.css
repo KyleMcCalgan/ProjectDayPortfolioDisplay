@@ -35,6 +35,9 @@ html { scroll-behavior: smooth; }
 body {
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   color: var(--ink);
   background: var(--mint);
@@ -43,6 +46,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
+main { flex: 1 0 auto; }
 
 button, input { font: inherit; }
 a { color: inherit; text-decoration: none; }
@@ -84,7 +88,7 @@ img { max-width: 100%; }
 }
 .main-nav a:hover, .main-nav a[aria-current="page"] { color: var(--ink); background: var(--pink-pale); }
 
-.page { min-height: calc(100vh - 126px); padding-block: clamp(30px, 6vh, 58px) 88px; }
+.page { min-height: calc(100vh - 136px); min-height: calc(100dvh - 136px); padding-block: clamp(30px, 6vh, 58px) 88px; }
 .page-intro { margin-bottom: 26px; }
 .page-intro-with-mascot { display: flex; align-items: center; justify-content: space-between; gap: 22px; }
 .page-intro-copy { min-width: 0; }
@@ -176,6 +180,9 @@ img { max-width: 100%; }
   scrollbar-width: none;
 }
 .product-tabs::-webkit-scrollbar { display: none; }
+.product-carousel { min-width: 0; }
+.product-pages { display: block; }
+.product-slide:not(.is-active) { display: none; }
 .product-tab {
   min-height: 44px;
   min-width: 0;
@@ -374,11 +381,14 @@ body[data-member-id] .site-footer { display: none; }
 .profile-section.is-scrolling::-webkit-scrollbar-thumb,
 .profile-section:hover::-webkit-scrollbar-thumb,
 .profile-section:focus-visible::-webkit-scrollbar-thumb { background-color: var(--pink); }
-.profile-pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; }
-.profile-dot { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.profile-dot span { width: 9px; height: 9px; display: block; border: 2px solid var(--ink); border-radius: 999px; background: var(--mint-soft); transition: width .18s ease, background .18s ease; }
-.profile-dot:hover span { background: var(--yellow); }
-.profile-dot.is-active span { width: 21px; background: var(--pink); box-shadow: 1px 2px 0 var(--ink); }
+.page-indicator { min-width: 0; min-height: 34px; display: flex; align-items: center; justify-content: center; margin-top: 8px; }
+.page-indicator-dots { display: inline-flex; align-items: center; gap: 1px; }
+.page-indicator-dot { width: 27px; height: 30px; display: grid; flex: 0 0 auto; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.page-indicator-dot span { width: 8px; height: 8px; display: block; border: 2px solid var(--ink); border-radius: 999px; background: var(--mint-soft); transition: width .18s ease, background .18s ease; }
+.page-indicator-dot:hover span { background: var(--yellow); }
+.page-indicator-dot.is-active span { width: 19px; background: var(--pink); box-shadow: 1px 2px 0 var(--ink); }
+.profile-pager { flex: 0 0 auto; }
+.product-pager, .journey-pager { display: none; }
 .profile-section {
   min-width: 0;
   width: 100%;
@@ -469,7 +479,7 @@ body[data-member-id] .site-footer { display: none; }
 .not-found > p { max-width: 520px; color: var(--muted); }
 .not-found-links { display: flex; align-items: center; gap: 18px; margin-top: 12px; }
 
-.site-footer { border-top: 1px solid var(--line); background: var(--paper); }
+.site-footer { flex: 0 0 auto; border-top: 1px solid var(--line); background: var(--paper); }
 .footer-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .footer-brand .brand-mark { width: 28px; height: 28px; }
 .footer-brand .brand-name { font-size: 15px; }
@@ -515,7 +525,7 @@ body[data-member-id] .site-footer { display: none; }
   .nav-shell { min-height: 62px; }
   .brand-name { font-size: 16px; }
   .main-nav a { min-height: 38px; padding-inline: 12px; font-size: 13px; }
-  .page { min-height: calc(100vh - 118px); padding-top: 30px; padding-bottom: 76px; }
+  .page { min-height: calc(100vh - 124px); min-height: calc(100dvh - 124px); padding-top: 30px; padding-bottom: 76px; }
   .page-intro { margin-bottom: 20px; }
   .page-intro h1 { font-size: clamp(32px, 9vw, 42px); }
   .page-intro p { margin-top: 7px; font-size: 14px; }
@@ -671,6 +681,7 @@ body[data-member-id] .site-footer { display: none; }
   .journey-timeline::-webkit-scrollbar { display: none; }
   .journey-timeline::before, .journey-node { display: none; }
   .journey-stop { flex: 0 0 100%; min-width: 0; padding: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+  .journey-pager { display: flex; }
   .journey-card, .journey-card-wide { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 12px; border: 0; border-radius: 18px; box-shadow: none; }
   .journey-media { padding: 8px; }
   .journey-shots { max-width: none; gap: 8px; }
@@ -713,8 +724,12 @@ body[data-member-id] .site-footer { display: none; }
   }
   .profile-slide-intro .profile-hero { scrollbar-gutter: auto; }
   .profile-section { scrollbar-gutter: auto; }
-  .profile-pager { display: none; }
   .profile-contact .cv-actions { margin-top: 0; }
+
+  .product-pages { display: flex; align-items: flex-start; gap: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; transition: height .2s ease; }
+  .product-pages::-webkit-scrollbar { display: none; }
+  .product-slide, .product-slide:not(.is-active) { min-width: 0; flex: 0 0 100%; display: grid; scroll-snap-align: start; scroll-snap-stop: always; }
+  .product-pager { display: flex; }
 }
 
 /* Projects with more than one screenshot show them stacked (side by side on narrow cards). */

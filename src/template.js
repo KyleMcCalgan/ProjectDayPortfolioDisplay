@@ -49,6 +49,16 @@ const icon = (name, size = 18) => {
   return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${shapes[name] || shapes.arrow}</svg>`;
 };
 
+function pageIndicator(items, { className = "", ariaLabel, dataAttribute }) {
+  const dots = items.map((item, index) => {
+    const label = item.label || item.title || item.tab || `Page ${index + 1}`;
+    return `<button class="page-indicator-dot${index === 0 ? " is-active" : ""}" type="button" ${dataAttribute}="${index}" aria-label="Show ${escapeHtml(label)} page"${index === 0 ? ' aria-current="step"' : ""}><span></span></button>`;
+  }).join("");
+  return `<nav class="page-indicator ${className}" aria-label="${escapeHtml(ariaLabel)}">
+    <span class="page-indicator-dots">${dots}</span>
+  </nav>`;
+}
+
 function header(base, active = "team") {
   const teamCurrent = active === "team" ? ' aria-current="page"' : "";
   const appCurrent = active === "app" ? ' aria-current="page"' : "";
@@ -114,12 +124,27 @@ function renderTeamPage(base) {
 function renderAppPage(base) {
   const tabs = productScreenshots.map((screen, index) => {
     const active = index === 0;
-    return `<button class="product-tab ${active ? "is-active" : ""}" type="button" role="tab" id="tab-${escapeHtml(screen.id)}" aria-selected="${active}" aria-controls="product-screen" tabindex="${active ? "0" : "-1"}" data-product-tab="${escapeHtml(screen.id)}">${escapeHtml(screen.title)}</button>`;
+    return `<button class="product-tab ${active ? "is-active" : ""}" type="button" role="tab" id="tab-${escapeHtml(screen.id)}" aria-selected="${active}" aria-controls="product-panel-${escapeHtml(screen.id)}" tabindex="${active ? "0" : "-1"}" data-product-tab="${escapeHtml(screen.id)}">${escapeHtml(screen.title)}</button>`;
   }).join("");
 
-  const firstScreen = productScreenshots[0];
-  const imagePath = pathFor(base, firstScreen.image);
-  const firstHighlights = (firstScreen.highlights || []).map((highlight) => `<li>${escapeHtml(highlight)}</li>`).join("");
+  const slides = productScreenshots.map((screen, index) => {
+    const active = index === 0;
+    const highlights = (screen.highlights || []).map((highlight) => `<li>${escapeHtml(highlight)}</li>`).join("");
+    return `<section class="product-display product-slide${active ? " is-active" : ""}" id="product-panel-${escapeHtml(screen.id)}" role="tabpanel" aria-labelledby="tab-${escapeHtml(screen.id)}" aria-hidden="${!active}"${active ? "" : " inert"} data-product-slide>
+      <figure class="product-frame">
+        <div class="product-image-window">
+          <img data-product-image src="${pathFor(base, screen.image)}" alt="${escapeHtml(screen.alt)}" loading="lazy">
+          <p class="product-image-error" data-product-error hidden>The screenshot could not be loaded. Select another screen or try again later.</p>
+        </div>
+      </figure>
+      <aside class="product-details" aria-label="${escapeHtml(screen.title)} screen details">
+        <h2>${escapeHtml(screen.title)}</h2>
+        <p>${escapeHtml(screen.summary || screen.alt)}</p>
+        <ul class="product-highlights">${highlights}</ul>
+        <p class="product-details-note">These views are a small window into the wider SpendSense experience.</p>
+      </aside>
+    </section>`;
+  }).join("");
   const body = `<section class="page app-page wrap" id="app">
     <header class="page-intro page-intro-with-mascot app-intro">
       <div class="page-intro-copy"><h1>Explore the app.</h1>
@@ -129,23 +154,13 @@ function renderAppPage(base) {
       ${introMascot(base)}
     </header>
     <nav class="product-tabs" role="tablist" aria-label="SpendSense app screens">${tabs}</nav>
-    <section class="product-display" id="product-screen" role="tabpanel" aria-labelledby="tab-dashboard" aria-live="polite">
-      <figure class="product-frame">
-        <div class="product-image-window">
-          <img data-product-image src="${imagePath}" alt="${escapeHtml(firstScreen.alt)}">
-          <p class="product-image-error" data-product-error hidden>The screenshot could not be loaded. Select another screen or try again later.</p>
-        </div>
-      </figure>
-      <aside class="product-details" aria-label="Selected app screen details">
-        <h2 data-product-title>${escapeHtml(firstScreen.title)}</h2>
-        <p data-product-summary>${escapeHtml(firstScreen.summary || firstScreen.alt)}</p>
-        <ul class="product-highlights" data-product-highlights>${firstHighlights}</ul>
-        <p class="product-details-note">These views are a small window into the wider SpendSense experience.</p>
-      </aside>
-    </section>
+    <div class="product-carousel" data-product-carousel>
+      <div class="product-pages" data-product-pages>${slides}</div>
+      ${pageIndicator(productScreenshots, { className: "product-pager", ariaLabel: "App screen page navigation", dataAttribute: "data-product-dot" })}
+    </div>
   </section>`;
 
-  return shell({ base, title: "Explore the SpendSense App", description: "Browse real SpendSense app screens for Home, Calendar, Simulation, Quests, Friends, and Mascot.", body, active: "app", pageData: { productScreenshots } });
+  return shell({ base, title: "Explore the SpendSense App", description: "Browse real SpendSense app screens for Home, Calendar, Simulation, Quests, Friends, and Mascot.", body, active: "app" });
 }
 
 function partnersMarkup(base, className) {
@@ -194,6 +209,7 @@ function renderJourneyPage(base) {
     <div class="journey-carousel" data-journey-carousel>
       <nav class="journey-tabs" role="tablist" aria-label="SpendSense demos">${tabs}</nav>
       <div class="journey-timeline" data-journey-pages>${stops}</div>
+      ${pageIndicator(journey, { className: "journey-pager", ariaLabel: "Journey page navigation", dataAttribute: "data-journey-dot" })}
     </div>
     ${partnersMarkup(base, "journey-partners-footer")}
     <p class="journey-note">Built from the project's GitHub milestones and issues.</p>
@@ -291,10 +307,11 @@ function renderProfile(member, base) {
     '" aria-selected="' + (index === 0) + '" aria-controls="profile-panel-' + area.id + '" tabindex="' + (index === 0 ? '0' : '-1') +
     '" data-profile-tab="' + area.id + '">' + area.label + '</button>',
   ).join("");
-  const profileDots = profileAreas.map((area, index) =>
-    '<button class="profile-dot' + (index === 0 ? ' is-active' : '') + '" type="button" data-profile-dot="' + index +
-    '" aria-label="Show ' + area.label + ' page"' + (index === 0 ? ' aria-current="step"' : '') + '><span></span></button>',
-  ).join("");
+  const profileDots = pageIndicator(profileAreas, {
+    className: "profile-pager",
+    ariaLabel: member.name + " page navigation",
+    dataAttribute: "data-profile-dot",
+  });
   const areaPanels =
     '<div class="profile-slide profile-slide-intro" id="profile-panel-profile" role="tabpanel" aria-labelledby="profile-tab-profile" data-profile-slide="profile">' +
       '<header class="profile-hero" role="region" aria-label="' + escapeHtml(member.name) + ' profile information" tabindex="0"><div class="profile-visual">' + avatar +
@@ -324,7 +341,7 @@ function renderProfile(member, base) {
     '<div class="profile-content">' +
       '<nav class="profile-tabs" role="tablist" aria-label="' + escapeHtml(member.name) + ' portfolio areas">' + areaTabs + "</nav>" +
       '<div class="profile-carousel" data-profile-carousel><div class="profile-pages" data-profile-pages>' + areaPanels +
-      '</div><nav class="profile-pager" aria-label="' + escapeHtml(member.name) + ' page navigation">' + profileDots + "</nav></div>" +
+      "</div>" + profileDots + "</div>" +
     "</div></section>";
   return shell({
     base,

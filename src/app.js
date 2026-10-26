@@ -1,53 +1,88 @@
 
 const base = window.SITE_BASE || "/";
-const data = { members: [], productScreenshots: [], ...(window.SITE_DATA || {}) };
+const data = { members: [], ...(window.SITE_DATA || {}) };
 
-const tabs = Array.from(document.querySelectorAll("[data-product-tab]"));
-const productImage = document.querySelector("[data-product-image]");
-const productError = document.querySelector("[data-product-error]");
-const productTitle = document.querySelector("[data-product-title]");
-const productSummary = document.querySelector("[data-product-summary]");
-const productHighlights = document.querySelector("[data-product-highlights]");
+const productCarousel = document.querySelector("[data-product-carousel]");
+if (productCarousel) {
+  const pages = productCarousel.querySelector("[data-product-pages]");
+  const slides = Array.from(productCarousel.querySelectorAll("[data-product-slide]"));
+  const tabs = Array.from(document.querySelectorAll("[data-product-tab]"));
+  const dots = Array.from(productCarousel.querySelectorAll("[data-product-dot]"));
+  const swipeLayout = window.matchMedia("(max-width: 860px)");
+  let current = 0;
+  let frame = 0;
 
-function selectProduct(tab) {
-  const screens = data.productScreenshots || [];
-  const screen = screens.find((item) => item.id === tab.dataset.productTab);
-  if (!screen || !productImage) return;
-
-  tabs.forEach((item, index) => {
-    const active = item === tab;
-    item.classList.toggle("is-active", active);
-    item.setAttribute("aria-selected", String(active));
-    item.tabIndex = active ? 0 : -1;
-  });
-
-  productImage.alt = screen.alt;
-  productImage.src = base + screen.image;
-  productImage.hidden = false;
-  if (productTitle) productTitle.textContent = screen.title;
-  if (productSummary) productSummary.textContent = screen.summary || screen.alt;
-  if (productHighlights) {
-    productHighlights.replaceChildren(...(screen.highlights || []).map((highlight) => {
-      const item = document.createElement("li");
-      item.textContent = highlight;
-      return item;
-    }));
+  function fitHeight() {
+    pages.style.height = swipeLayout.matches && slides[current] ? `${slides[current].offsetHeight}px` : "";
   }
-  if (productError) productError.hidden = true;
-  document.querySelector("#product-screen")?.setAttribute("aria-labelledby", tab.id);
-}
 
-tabs.forEach((tab, index) => {
-  tab.addEventListener("click", () => selectProduct(tab));
-  tab.addEventListener("keydown", (event) => {
-    if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 :
-      (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-    tabs[next]?.focus();
-    tabs[next]?.click();
+  function select(index, scroll = false) {
+    if (!slides.length) return;
+    current = Math.max(0, Math.min(index, slides.length - 1));
+    tabs.forEach((tab, i) => {
+      const active = i === current;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    slides.forEach((slide, i) => {
+      const active = i === current;
+      slide.classList.toggle("is-active", active);
+      slide.setAttribute("aria-hidden", String(!active));
+      slide.inert = !active;
+    });
+    dots.forEach((dot, i) => {
+      const active = i === current;
+      dot.classList.toggle("is-active", active);
+      if (active) dot.setAttribute("aria-current", "step");
+      else dot.removeAttribute("aria-current");
+    });
+    fitHeight();
+    if (scroll && swipeLayout.matches) {
+      const left = slides[current].offsetLeft - slides[0].offsetLeft;
+      if (Math.abs(left - pages.scrollLeft) >= 1) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        pages.scrollTo({ left, behavior });
+      }
+    }
+  }
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => select(index, true));
+    tab.addEventListener("keydown", (event) => {
+      if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 :
+        (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[next]?.focus();
+      select(next, true);
+    });
   });
-});
+  dots.forEach((dot) => dot.addEventListener("click", () => select(Number(dot.dataset.productDot), true)));
+  slides.forEach((slide) => {
+    const image = slide.querySelector("[data-product-image]");
+    const error = slide.querySelector("[data-product-error]");
+    image?.addEventListener("error", () => {
+      image.hidden = true;
+      if (error) error.hidden = false;
+    }, { once: true });
+  });
+  pages.addEventListener("scroll", () => {
+    if (!swipeLayout.matches || frame) return;
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      const index = Math.round(pages.scrollLeft / pages.clientWidth);
+      if (index !== current) select(index);
+    });
+  }, { passive: true });
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => fitHeight());
+    slides.forEach((slide) => observer.observe(slide));
+  }
+  swipeLayout.addEventListener("change", () => select(current, true));
+  window.addEventListener("resize", () => select(current, true));
+  select(0);
+}
 
 const profileTabs = Array.from(document.querySelectorAll("[data-profile-tab]"));
 const profilePages = document.querySelector("[data-profile-pages]");
@@ -122,7 +157,6 @@ function selectProfileArea(index, shouldScroll = false) {
     if (active) dot.setAttribute("aria-current", "step");
     else dot.removeAttribute("aria-current");
   });
-
   if (!profilePages || !profileSlides[selectedIndex]) return;
   fitProfileHeight(selectedIndex);
   if (selectedIndex !== lastProfileIndex) {
@@ -183,11 +217,6 @@ if (profilePages && profileSlides.length && profileTabs.length) {
   });
 }
 
-productImage?.addEventListener("error", () => {
-  productImage.hidden = true;
-  if (productError) productError.hidden = false;
-}, { once: true });
-
 function renderProjectImages() {
   const member = data.members.find((entry) => entry.id === document.body.dataset.memberId);
   if (!member) return;
@@ -221,6 +250,7 @@ if (journeyCarousel) {
   const pages = journeyCarousel.querySelector("[data-journey-pages]");
   const slides = Array.from(journeyCarousel.querySelectorAll("[data-journey-slide]"));
   const tabs = Array.from(journeyCarousel.querySelectorAll("[data-journey-tab]"));
+  const dots = Array.from(journeyCarousel.querySelectorAll("[data-journey-dot]"));
   const swipeLayout = window.matchMedia("(max-width: 860px)");
   let current = 0;
 
@@ -236,6 +266,12 @@ if (journeyCarousel) {
       const hidden = swipeLayout.matches && i !== current;
       slide.inert = hidden;
       slide.setAttribute("aria-hidden", String(hidden));
+    });
+    dots.forEach((dot, i) => {
+      const active = i === current;
+      dot.classList.toggle("is-active", active);
+      if (active) dot.setAttribute("aria-current", "step");
+      else dot.removeAttribute("aria-current");
     });
     fitHeight();
     if (scroll && swipeLayout.matches) {
@@ -281,6 +317,12 @@ if (journeyCarousel) {
         (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
       tabs[next].focus();
       select(next, true);
+    });
+  });
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      select(Number(dot.dataset.journeyDot), true);
+      if (swipeLayout.matches && window.scrollY > journeyCarousel.offsetTop) window.scrollTo({ top: 0, behavior: "auto" });
     });
   });
   swipeLayout.addEventListener("change", () => select(current, true));
