@@ -5,6 +5,9 @@ const data = { members: [], productScreenshots: [], ...(window.SITE_DATA || {}) 
 const tabs = Array.from(document.querySelectorAll("[data-product-tab]"));
 const productImage = document.querySelector("[data-product-image]");
 const productError = document.querySelector("[data-product-error]");
+const productTitle = document.querySelector("[data-product-title]");
+const productSummary = document.querySelector("[data-product-summary]");
+const productHighlights = document.querySelector("[data-product-highlights]");
 
 function selectProduct(tab) {
   const screens = data.productScreenshots || [];
@@ -21,6 +24,15 @@ function selectProduct(tab) {
   productImage.alt = screen.alt;
   productImage.src = base + screen.image;
   productImage.hidden = false;
+  if (productTitle) productTitle.textContent = screen.title;
+  if (productSummary) productSummary.textContent = screen.summary || screen.alt;
+  if (productHighlights) {
+    productHighlights.replaceChildren(...(screen.highlights || []).map((highlight) => {
+      const item = document.createElement("li");
+      item.textContent = highlight;
+      return item;
+    }));
+  }
   if (productError) productError.hidden = true;
   document.querySelector("#product-screen")?.setAttribute("aria-labelledby", tab.id);
 }

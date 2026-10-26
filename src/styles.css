@@ -10,7 +10,7 @@
   --line: #d9e9e2;
   --mint-soft: #e4f3ed;
   --yellow: #ffdc82;
-  --max: 1040px;
+  --max: 1240px;
 }
 
 @font-face {
@@ -99,7 +99,7 @@ img { max-width: 100%; }
 }
 .page-intro p { max-width: 620px; margin: 9px 0 0; color: var(--muted); font-size: 16px; }
 
-.team-page { max-width: 940px; }
+.team-page { max-width: 1120px; }
 .team-page .page-intro { margin-bottom: 30px; }
 .team-intro { min-height: 150px; padding: 4px 4px 10px; }
 .team-intro h1 span { color: var(--pink-deep); }
@@ -112,7 +112,7 @@ img { max-width: 100%; }
   gap: 18px;
 }
 .member-card {
-  min-height: 218px;
+  min-height: 252px;
   display: grid;
   grid-template-columns: minmax(120px, .95fr) minmax(0, 1fr);
   align-items: stretch;
@@ -133,7 +133,7 @@ img { max-width: 100%; }
 .member-card:nth-child(5n) { background: var(--paper); }
 .member-card-photo {
   min-width: 0;
-  min-height: 190px;
+  min-height: 224px;
   overflow: hidden;
   border: 2px solid var(--ink);
   border-radius: 14px;
@@ -148,7 +148,7 @@ img { max-width: 100%; }
   font-size: 54px;
   font-weight: 900;
 }
-.member-photo { display: block; width: 100%; height: 100%; min-height: 190px; object-fit: cover; object-position: center 34%; }
+.member-photo { display: block; width: 100%; height: 100%; min-height: 224px; object-fit: cover; object-position: center 34%; }
 .member-card-content { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding: 10px 2px 28px 0; }
 .member-arrow { position: absolute; right: 2px; bottom: 5px; width: 22px; height: 22px; display: grid; place-items: center; color: var(--pink-deep); opacity: .72; transition: transform .18s ease, opacity .18s ease; }
 .member-arrow svg { width: 16px; height: 16px; }
@@ -158,14 +158,15 @@ img { max-width: 100%; }
 .member-role { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 700; line-height: 1.35; }
 .member-card-link { position: absolute; right: 28px; bottom: 8px; max-width: calc(100% - 58px); overflow: hidden; color: var(--pink-deep); font-size: 12px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 
-.app-page { max-width: 1040px; }
+.app-page { max-width: 1180px; }
 .app-page .page-intro { margin-bottom: 24px; }
 .app-intro { padding: 22px 24px; border: 2px solid var(--ink); border-radius: 20px; background: var(--pink-pale); box-shadow: 4px 5px 0 var(--ink); }
 .app-intro p { margin-top: 6px; }
 .app-more-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; color: var(--pink-deep); font-size: 13px; font-weight: 800; text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 4px; }
 .app-more-link:hover { color: var(--ink); }
 .product-tabs {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 7px;
   overflow-x: auto;
   padding: 6px;
@@ -177,13 +178,13 @@ img { max-width: 100%; }
 .product-tabs::-webkit-scrollbar { display: none; }
 .product-tab {
   min-height: 44px;
-  flex: 0 0 auto;
-  padding: 0 16px;
+  min-width: 0;
+  padding: 0 8px;
   border: 2px solid transparent;
   border-radius: 999px;
   color: var(--muted);
   background: transparent;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   transition: color .18s ease, background .18s ease;
@@ -192,12 +193,13 @@ img { max-width: 100%; }
 .product-tab.is-active { border-color: var(--ink); color: var(--ink); background: var(--pink); box-shadow: 2px 3px 0 var(--ink); }
 .product-display {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-  padding: 26px 4px 0;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, .82fr);
+  align-items: start;
+  gap: clamp(28px, 4vw, 58px);
+  padding: 30px 4px 0;
 }
 .product-frame {
-  width: min(100%, 440px);
+  width: min(100%, 500px);
   justify-self: center;
   margin: 0;
   overflow: hidden;
@@ -211,10 +213,16 @@ img { max-width: 100%; }
 }
 .product-image-window img { display: block; width: 100%; height: auto; }
 .product-image-error { margin: 0; padding: 24px 18px; color: var(--muted); }
+.product-details { max-width: 480px; padding: 18px 0 28px; }
+.product-details h2 { margin: 0; font-size: clamp(26px, 3vw, 38px); line-height: 1.08; letter-spacing: -.045em; }
+.product-details > p:not(.product-details-note) { margin: 12px 0 0; color: var(--muted); font-size: 17px; line-height: 1.65; }
+.product-highlights { display: grid; gap: 0; margin: 24px 0 0; padding: 0; list-style: none; }
+.product-highlights li { padding: 14px 0; border-top: 1px solid var(--line); font-size: 16px; font-weight: 800; }
+.product-details-note { margin: 20px 0 0; padding: 14px 16px; border-left: 4px solid var(--pink); color: var(--muted); background: var(--mint-soft); font-size: 14px; line-height: 1.55; }
 body[data-member-id] { height: 100vh; height: 100dvh; overflow: hidden; }
 body[data-member-id] .site-footer { display: none; }
 .profile-page {
-  max-width: 940px;
+  max-width: 1120px;
   height: calc(100vh - 69px);
   height: calc(100dvh - 69px);
   min-height: 0;
@@ -242,7 +250,7 @@ body[data-member-id] .site-footer { display: none; }
 .profile-back svg { transform: rotate(180deg); }
 .profile-hero {
   display: grid;
-  grid-template-columns: minmax(210px, .8fr) minmax(0, 1.45fr);
+  grid-template-columns: minmax(280px, .8fr) minmax(0, 1.45fr);
   align-items: center;
   gap: clamp(22px, 4vw, 40px);
   padding: clamp(18px, 3.5vw, 34px);
@@ -468,9 +476,40 @@ body[data-member-id] .site-footer { display: none; }
 .footer-inner > span { color: var(--muted); font-size: 12px; }
 .footer-app-link { display: inline-flex; align-items: center; gap: 5px; color: var(--pink-deep); font-size: 12px; font-weight: 800; }
 
+@media (min-width: 1000px) {
+  .team-directory { gap: 22px; }
+  .profile-tabs { width: min(100%, 680px); }
+  .profile-contact .contact-links { max-width: 850px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .profile-contact .cv-preview { max-width: 900px; }
+  .profile-contact .cv-actions { grid-template-columns: max-content max-content; justify-content: start; }
+  .profile-contact .cv-actions .button, .profile-contact .cv-actions .text-link { width: auto; }
+}
+
+@media (max-width: 860px) {
+  .team-page { max-width: 740px; }
+  .team-directory { grid-template-columns: 1fr; gap: 16px; }
+  .member-card { min-height: 232px; grid-template-columns: minmax(200px, .8fr) minmax(0, 1fr); }
+  .member-card-photo, .member-photo { min-height: 204px; }
+  .app-page .product-display { grid-template-columns: minmax(0, 1fr); justify-items: stretch; gap: 22px; }
+  .app-page .product-frame { width: min(100%, 460px); justify-self: center; }
+  .product-details { width: min(100%, 640px); max-width: none; justify-self: center; padding: 0 0 12px; }
+  .product-highlights { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .product-highlights li { padding: 12px 0; }
+}
+
 @media (min-width: 1200px) {
   .team-page { padding-top: 68px; }
+  .page-intro h1 { font-size: clamp(50px, 4.4vw, 64px); }
 }
+
+@media (min-width: 1400px) {
+  .member-card { min-height: 270px; grid-template-columns: minmax(240px, .95fr) minmax(0, 1fr); gap: 20px; padding: 14px; }
+  .member-card-photo, .member-photo { min-height: 240px; }
+  .member-copy strong { font-size: 25px; }
+  .member-role { font-size: 15px; }
+  .member-card-link { font-size: 13px; }
+}
+
 @media (max-width: 680px) {
   .wrap { width: min(var(--max), calc(100% - 32px)); }
   .nav-shell { min-height: 62px; }
@@ -493,6 +532,11 @@ body[data-member-id] .site-footer { display: none; }
   .product-tab { min-height: 39px; padding-inline: 7px; font-size: 13px; white-space: nowrap; }
   .product-display { padding: 20px 0 0; }
   .product-frame { width: min(100%, 390px); }
+  .product-details { width: min(100%, 390px); padding: 0 0 8px; }
+  .product-details > p:not(.product-details-note) { margin-top: 8px; font-size: 15px; }
+  .product-highlights { grid-template-columns: 1fr; gap: 0; margin-top: 12px; }
+  .product-highlights li { padding: 9px 0; font-size: 14px; }
+  .product-details-note { margin-top: 12px; }
   .profile-back { margin-bottom: 16px; }
   .profile-page { height: calc(100vh - 63px); height: calc(100dvh - 63px); min-height: 0; padding: 12px 0 8px; }
   .profile-back { margin-bottom: 12px; }

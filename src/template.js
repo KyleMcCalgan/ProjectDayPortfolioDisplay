@@ -23,7 +23,7 @@ function header(base, active = "team") {
   const appCurrent = active === "app" ? ' aria-current="page"' : "";
   return `<header class="site-header"><div class="nav-shell wrap">
     <a class="brand" href="${pathFor(base)}" aria-label="SpendSense team page">
-      <img class="brand-mark" src="${pathFor(base, "assets/favicon.svg")}" alt="" width="34" height="34"><span class="brand-name">SpendSense</span>
+      <img class="brand-mark" src="${pathFor(base, "assets/favicon.svg?v=2")}" alt="" width="34" height="34"><span class="brand-name">SpendSense</span>
     </a>
     <nav class="main-nav" aria-label="Main navigation">
       <a href="${pathFor(base)}"${teamCurrent}>Team</a><a href="${pathFor(base, "app/")}"${appCurrent}>App</a>
@@ -33,7 +33,7 @@ function header(base, active = "team") {
 
 function footer(base) {
   return `<footer class="site-footer"><div class="wrap footer-inner">
-    <a class="brand footer-brand" href="${pathFor(base)}" aria-label="SpendSense team page"><img class="brand-mark" src="${pathFor(base, "assets/favicon.svg")}" alt="" width="28" height="28"><span class="brand-name">SpendSense</span></a>
+    <a class="brand footer-brand" href="${pathFor(base)}" aria-label="SpendSense team page"><img class="brand-mark" src="${pathFor(base, "assets/favicon.svg?v=2")}" alt="" width="28" height="28"><span class="brand-name">SpendSense</span></a>
     <span>Project Day team portfolio</span>
     <a class="footer-app-link" href="${pathFor(base, "app/")}">View the app ${icon("arrow", 14)}</a>
   </div></footer>`;
@@ -49,7 +49,7 @@ function shell({ base, title, description, body, active = "team", profileId = ""
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f3faf6"><meta name="description" content="${escapeHtml(description)}">
 <meta property="og:type" content="website"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">
-<title>${escapeHtml(title)}</title><link rel="icon" type="image/svg+xml" href="${pathFor(base, "assets/favicon.svg")}"><link rel="stylesheet" href="${pathFor(base, "assets/site.css")}">
+<title>${escapeHtml(title)}</title><link rel="icon" type="image/svg+xml" href="${pathFor(base, "assets/favicon.svg?v=2")}"><link rel="stylesheet" href="${pathFor(base, "assets/site.css")}">
 </head><body id="top" ${profileId ? `data-member-id="${escapeHtml(profileId)}"` : ""}>
 ${header(base, active)}<main>${body}</main>${footer(base)}
 <script>window.SITE_BASE = ${JSON.stringify(baseUrl)}; window.SITE_DATA = ${JSON.stringify(pageData)};</script>
@@ -87,6 +87,7 @@ function renderAppPage(base) {
 
   const firstScreen = productScreenshots[0];
   const imagePath = pathFor(base, firstScreen.image);
+  const firstHighlights = (firstScreen.highlights || []).map((highlight) => `<li>${escapeHtml(highlight)}</li>`).join("");
   const body = `<section class="page app-page wrap" id="app">
     <header class="page-intro page-intro-with-mascot app-intro">
       <div class="page-intro-copy"><h1>Explore the app.</h1>
@@ -103,6 +104,12 @@ function renderAppPage(base) {
           <p class="product-image-error" data-product-error hidden>The screenshot could not be loaded. Select another screen or try again later.</p>
         </div>
       </figure>
+      <aside class="product-details" aria-label="Selected app screen details">
+        <h2 data-product-title>${escapeHtml(firstScreen.title)}</h2>
+        <p data-product-summary>${escapeHtml(firstScreen.summary || firstScreen.alt)}</p>
+        <ul class="product-highlights" data-product-highlights>${firstHighlights}</ul>
+        <p class="product-details-note">These views are a small window into the wider SpendSense experience.</p>
+      </aside>
     </section>
   </section>`;
 
