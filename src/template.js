@@ -1,4 +1,3 @@
-
 import { features, members, productScreenshots, site } from "./data/content.js";
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({
@@ -19,29 +18,32 @@ const icon = (name, size = 18) => {
   return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${shapes[name] || shapes.arrow}</svg>`;
 };
 
-function header(base, profile = false) {
-  const teamHref = profile ? pathFor(base, "#team") : "#team";
-  const productHref = profile ? pathFor(base, "#product") : "#product";
+function header(base, active = "team") {
+  const teamCurrent = active === "team" ? ' aria-current="page"' : "";
+  const appCurrent = active === "app" ? ' aria-current="page"' : "";
   return `<header class="site-header"><div class="nav-shell wrap">
-    <a class="brand" href="${pathFor(base)}" aria-label="SpendSense team hub">
-      <span class="brand-mark" aria-hidden="true">S</span><span class="brand-name">SpendSense</span><span class="brand-tag">TEAM HUB</span>
+    <a class="brand" href="${pathFor(base)}" aria-label="SpendSense team page">
+      <img class="brand-mark" src="${pathFor(base, "assets/favicon.svg")}" alt="" width="34" height="34"><span class="brand-name">SpendSense</span>
     </a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="${teamHref}">The team</a><a href="${productHref}">The app</a>
+      <a href="${pathFor(base)}"${teamCurrent}>Team</a><a href="${pathFor(base, "app/")}"${appCurrent}>App</a>
     </nav>
-    <a class="nav-action" href="${escapeHtml(site.applicationUrl)}" target="_blank" rel="noopener noreferrer">Visit SpendSense ${icon("external", 15)}</a>
   </div></header>`;
 }
 
 function footer(base) {
-  return `<footer class="site-footer"><div class="wrap footer-main">
-    <a class="brand footer-brand" href="${pathFor(base)}"><span class="brand-mark" aria-hidden="true">S</span><span class="brand-name">SpendSense</span><span class="brand-tag">TEAM HUB</span></a>
-    <p>A closer look at the people and product behind SpendSense.</p>
-    <a class="footer-top" href="#top">Back to top ${icon("arrow", 14)}</a>
-  </div><div class="wrap footer-bottom"><span>Project Day team portfolio</span><span>Team details are ready for the developers' approved introductions.</span></div></footer>`;
+  return `<footer class="site-footer"><div class="wrap footer-inner">
+    <a class="brand footer-brand" href="${pathFor(base)}" aria-label="SpendSense team page"><img class="brand-mark" src="${pathFor(base, "assets/favicon.svg")}" alt="" width="28" height="28"><span class="brand-name">SpendSense</span></a>
+    <span>Project Day team portfolio</span>
+    <a class="footer-app-link" href="${pathFor(base, "app/")}">View the app ${icon("arrow", 14)}</a>
+  </div></footer>`;
 }
 
-function shell({ base, title, description, body, profileId = "" }) {
+function introMascot(base) {
+  return `<figure class="intro-mascot" aria-hidden="true"><img src="${pathFor(base, "assets/mascot/mascot-neutral.svg")}" alt="" loading="lazy"></figure>`;
+}
+
+function shell({ base, title, description, body, active = "team", profileId = "", pageData = {} }) {
   const baseUrl = pathFor(base);
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,164 +51,218 @@ function shell({ base, title, description, body, profileId = "" }) {
 <meta property="og:type" content="website"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">
 <title>${escapeHtml(title)}</title><link rel="icon" type="image/svg+xml" href="${pathFor(base, "assets/favicon.svg")}"><link rel="stylesheet" href="${pathFor(base, "assets/site.css")}">
 </head><body id="top" ${profileId ? `data-member-id="${escapeHtml(profileId)}"` : ""}>
-${header(base, Boolean(profileId))}<main>${body}</main>${footer(base)}
-<script>window.SITE_BASE = ${JSON.stringify(baseUrl)}; window.SITE_DATA = ${JSON.stringify({ members, features, productScreenshots })};</script>
+${header(base, active)}<main>${body}</main>${footer(base)}
+<script>window.SITE_BASE = ${JSON.stringify(baseUrl)}; window.SITE_DATA = ${JSON.stringify(pageData)};</script>
 <script type="module" src="${pathFor(base, "assets/app.js")}"></script></body></html>`;
 }
 
-function renderHome(base) {
-  const teamRows = members.map((member, index) => {
+function renderTeamPage(base) {
+  const teamCards = members.map((member, index) => {
     const number = String(index + 1).padStart(2, "0");
-    return `<a class="member-row" href="${pathFor(base, `team/${member.slug}/`)}" aria-label="Open portfolio for ${escapeHtml(member.name)}">
-      <span class="member-index">${number}</span>
-      <span class="member-copy"><strong>${escapeHtml(member.name)}</strong><small>Developer introduction ready to add</small></span>
-      <span class="member-status">PROFILE ${number}</span>
-      <span class="member-arrow">${icon("arrow", 18)}</span>
+    return `<a class="member-card" href="${pathFor(base, `team/${member.slug}/`)}" aria-label="Open portfolio for ${escapeHtml(member.name)}">
+      <span class="member-card-photo">${member.portrait ? `<img class="member-photo" src="${pathFor(base, member.portrait)}" alt="" loading="lazy">` : `<span class="member-index">${number}</span>`}</span>
+      <span class="member-card-content"><span class="member-arrow">${icon("arrow", 20)}</span><span class="member-copy"><strong>${escapeHtml(member.name)}</strong>${member.headline && !member.isPlaceholder ? `<span class="member-role">${escapeHtml(member.headline)}</span>` : ""}<span class="member-card-link">${member.isMock ? "Sample profile · Open portfolio" : "View portfolio"}</span></span></span>
     </a>`;
   }).join("");
 
+  const body = `<section class="page team-page wrap" id="team">
+    <header class="page-intro page-intro-with-mascot team-intro">
+      <div class="page-intro-copy"><h1>Meet the <span>team.</span></h1>
+      <p>Five teammates behind SpendSense. Choose a card to explore each portfolio.</p>
+      <a class="site-visit-link" href="${escapeHtml(site.applicationUrl)}" target="_blank" rel="noopener noreferrer">Visit spendsense.co.za ${icon("external", 13)}</a></div>
+      ${introMascot(base)}
+    </header>
+    <nav class="team-directory" aria-label="SpendSense team profiles">${teamCards}</nav>
+    <p class="team-note">Introductions, roles, and project details will be added as the team approves them.</p>
+  </section>`;
+
+  return shell({ base, title: "The SpendSense Team", description: site.description, body, active: "team" });
+}
+
+function renderAppPage(base) {
   const tabs = productScreenshots.map((screen, index) => {
     const active = index === 0;
     return `<button class="product-tab ${active ? "is-active" : ""}" type="button" role="tab" id="tab-${escapeHtml(screen.id)}" aria-selected="${active}" aria-controls="product-screen" tabindex="${active ? "0" : "-1"}" data-product-tab="${escapeHtml(screen.id)}">${escapeHtml(screen.title)}</button>`;
   }).join("");
 
   const firstScreen = productScreenshots[0];
-  const fullImage = pathFor(base, firstScreen.image);
-  const body = `<section class="hero-section wrap">
-    <div class="hero-copy">
-      <p class="eyebrow hero-eyebrow"><span class="eyebrow-dot"></span>PROJECT DAY · TEAM HUB</p>
-      <h1>Meet the people<br>behind <span>SpendSense.</span></h1>
-      <p class="hero-lead">Five teammates. One shared product. Start with the people, then take a look through the app they built.</p>
-      <div class="hero-actions"><a class="button button-primary" href="#team">Meet all five ${icon("arrow", 16)}</a><a class="button button-text" href="#product">Explore the app</a></div>
-    </div>
-    <a class="hero-count" href="#team" aria-label="Meet all five team members"><strong>05</strong><span>TEAM<br>PROFILES</span><i>Scroll to meet everyone ${icon("arrow", 15)}</i></a>
-  </section>
-
-  <section class="team-section section-pad" id="team"><div class="wrap">
-    <div class="section-heading">
-      <div><p class="eyebrow">01 · THE PEOPLE</p><h2>The team behind<br>the product.</h2></div>
-      <p class="section-description">Open a portfolio to learn about each developer's work, skills, and experience. Approved names and introductions can be added to these profiles.</p>
-    </div>
-    <div class="team-directory" aria-label="SpendSense team profiles">${teamRows}</div>
-    <p class="team-foot"><span class="status-dot"></span>Five profile pages are ready for the team's approved details.</p>
-  </div></section>
-
-  <section class="product-section section-pad" id="product"><div class="wrap">
-    <div class="section-heading product-heading">
-      <div><p class="eyebrow">02 · THE PRODUCT</p><h2>SpendSense at a glance.</h2></div>
-      <p class="section-description">Choose a screen to explore the actual app. These mobile references come from the screenshots provided for this team hub.</p>
-    </div>
-    <div class="product-tabs" role="tablist" aria-label="SpendSense app screens">${tabs}</div>
-    <div class="product-display" id="product-screen" role="tabpanel" aria-labelledby="tab-dashboard" aria-live="polite">
-      <div class="product-copy">
-        <p class="product-count" data-product-count>01 <span>/ 06 SCREENS</span></p>
-        <h3 data-product-heading>${escapeHtml(firstScreen.heading)}</h3>
-        <p data-product-description>${escapeHtml(firstScreen.description)}</p>
-        <a class="button button-dark" href="${escapeHtml(site.applicationUrl)}" target="_blank" rel="noopener noreferrer">Visit SpendSense ${icon("external", 15)}</a>
-        <p class="product-hint">Scroll inside the screenshot to see the full page.</p>
+  const imagePath = pathFor(base, firstScreen.image);
+  const body = `<section class="page app-page wrap" id="app">
+    <header class="page-intro page-intro-with-mascot app-intro">
+      <div class="page-intro-copy"><h1>Explore the app.</h1>
+        <p>These six screens are a small preview of SpendSense.</p>
+        <a class="app-more-link" href="${escapeHtml(site.applicationUrl)}" target="_blank" rel="noopener noreferrer">Explore more at spendsense.co.za ${icon("external", 13)}</a>
       </div>
+      ${introMascot(base)}
+    </header>
+    <nav class="product-tabs" role="tablist" aria-label="SpendSense app screens">${tabs}</nav>
+    <section class="product-display" id="product-screen" role="tabpanel" aria-labelledby="tab-dashboard" aria-live="polite">
       <figure class="product-frame">
-        <div class="product-image-window" role="region" tabindex="0" aria-label="Scrollable SpendSense screenshot">
-          <img data-product-image src="${fullImage}" alt="${escapeHtml(firstScreen.alt)}" loading="lazy">
+        <div class="product-image-window">
+          <img data-product-image src="${imagePath}" alt="${escapeHtml(firstScreen.alt)}">
           <p class="product-image-error" data-product-error hidden>The screenshot could not be loaded. Select another screen or try again later.</p>
         </div>
-        <figcaption><span data-product-caption>SPENDSENSE APP · ${escapeHtml(firstScreen.title.toUpperCase())}</span><a data-product-full-image href="${fullImage}" target="_blank" rel="noopener noreferrer">Open full image ${icon("external", 13)}</a></figcaption>
       </figure>
-    </div>
-  </div></section>
+    </section>
+  </section>`;
 
-  <section class="mascot-section section-pad"><div class="wrap mascot-wrap">
-    <div class="mascot-copy">
-      <p class="eyebrow">03 · A FAMILIAR FACE</p><h2>Say hello to<br><span>Spendy.</span></h2>
-      <p>The SpendSense mascot joins the app as a friendly guide. Here Spendy wears the same overalls and sweatband shown in your mascot screen.</p>
-      <a class="button button-primary" href="${escapeHtml(site.applicationUrl)}" target="_blank" rel="noopener noreferrer">Meet Spendy in the app ${icon("external", 15)}</a>
-      <small class="mascot-credit">Official mascot artwork and clothing from SpendSense.</small>
-    </div>
-    <figure class="mascot-stage" role="img" aria-label="SpendSense mascot Spendy wearing overalls and a sweatband">
-      <img class="mascot-layer mascot-body" src="${pathFor(base, "assets/mascot/mascot-neutral.svg")}" alt="" loading="lazy">
-      <img class="mascot-layer mascot-overalls" src="${pathFor(base, "assets/mascot/overalls.svg")}" alt="" loading="lazy">
-      <img class="mascot-layer mascot-sweatband" src="${pathFor(base, "assets/mascot/sweat-band.svg")}" alt="" loading="lazy">
-      <span class="mascot-ground" aria-hidden="true"></span>
-    </figure>
-  </div></section>`;
-
-  return shell({ base, title: site.title, description: site.description, body });
+  return shell({ base, title: "Explore the SpendSense App", description: "Browse real SpendSense app screens for Home, Calendar, Simulation, Quests, Friends, and Mascot.", body, active: "app", pageData: { productScreenshots } });
 }
 
 function profileLinks(member) {
   const definitions = [
     ["GitHub", member.links.github], ["LinkedIn", member.links.linkedin],
-    ["Website", member.links.website], ["Email", member.links.email ? `mailto:${member.links.email}` : ""],
+    ["Website", member.links.website], ["Email", member.links.email ? "mailto:" + member.links.email : ""],
   ].filter(([, url]) => url);
-  if (!definitions.length) return `<p class="soft-note">Verified professional links have not been provided.</p>`;
-  return definitions.map(([label, url]) => `<a class="profile-link" href="${escapeHtml(url)}" ${url.startsWith("http") ? 'target="_blank" rel="noopener noreferrer"' : ""}>${escapeHtml(label)} ${icon("external", 14)}</a>`).join("");
+  if (!definitions.length) return '<p class="profile-empty">No public links added yet.</p>';
+  return definitions.map(([label, url]) =>
+    '<a class="profile-link" href="' + escapeHtml(url) + '"' +
+    (url.startsWith("http") ? ' target="_blank" rel="noopener noreferrer"' : "") +
+    '>' + escapeHtml(label) + " " + icon("external", 14) + "</a>",
+  ).join("");
 }
 
 function profileProjects(member) {
-  if (!member.projects.length) return `<div class="profile-empty"><span class="empty-mark">${icon("wallet", 21)}</span><div><strong>Projects are ready to add.</strong><p>Add a short summary, the developer's role, tools, and a link or screenshot.</p></div></div>`;
-  return `<div class="project-list">${member.projects.map((project) => `<article class="project-item"><div class="project-image-placeholder"><span>${icon("wallet", 23)}</span><small>PROJECT IMAGE</small></div><div class="project-item-copy"><span class="eyebrow">SELECTED WORK</span><h3>${escapeHtml(project.title)}</h3><p>${escapeHtml(project.summary)}</p>${project.responsibility ? `<p class="responsibility"><strong>Role:</strong> ${escapeHtml(project.responsibility)}</p>` : ""}<div class="tag-row">${(project.technologies || []).map((tech) => `<span class="tag">${escapeHtml(tech)}</span>`).join("")}</div><div class="project-links">${project.repoUrl ? `<a href="${escapeHtml(project.repoUrl)}" target="_blank" rel="noopener noreferrer">Repository ${icon("external", 14)}</a>` : ""}${project.demoUrl ? `<a href="${escapeHtml(project.demoUrl)}" target="_blank" rel="noopener noreferrer">Live demo ${icon("external", 14)}</a>` : ""}</div></div></article>`).join("")}</div>`;
+  if (!member.projects.length) return '<p class="profile-empty">Projects will appear here when they are ready to share.</p>';
+  const cards = member.projects.map((project, index) => {
+    const technologies = (project.technologies || []).map((tech) =>
+      '<span class="tag">' + escapeHtml(tech) + "</span>",
+    ).join("");
+    const repositoryLink = project.repoUrl
+      ? '<a href="' + escapeHtml(project.repoUrl) + '" target="_blank" rel="noopener noreferrer">Repository ' + icon("external", 14) + "</a>"
+      : "";
+    const demoLink = project.demoUrl
+      ? '<a href="' + escapeHtml(project.demoUrl) + '" target="_blank" rel="noopener noreferrer">Live demo ' + icon("external", 14) + "</a>"
+      : "";
+    const responsibility = project.responsibility
+      ? '<p class="responsibility"><strong>Role:</strong> ' + escapeHtml(project.responsibility) + "</p>"
+      : "";
+    const screenshot = project.screenshots?.[0];
+    const projectImage = screenshot
+      ? '<img src="' + pathFor(base, screenshot.src) + '" alt="' + escapeHtml(screenshot.alt) + '" loading="lazy">'
+      : '<span class="project-image-fallback">' + icon("wallet", 23) + "<span>Project preview</span></span>";
+
+    return '<article class="project-item">' +
+      '<div class="project-image-placeholder">' + projectImage + "</div>" +
+      '<div class="project-item-copy"><div class="project-title-row"><h3>' + escapeHtml(project.title) + '</h3><span class="project-index">' + String(index + 1).padStart(2, "0") + "</span></div>" +
+      "<p>" + escapeHtml(project.summary) + "</p>" + responsibility +
+      '<div class="tag-row">' + technologies + "</div>" +
+      '<div class="project-links">' + repositoryLink + demoLink + "</div></div></article>";
+  }).join("");
+  return '<div class="project-list">' + cards + "</div>";
 }
 
 function profileContributions(member, base) {
-  const contributions = features.flatMap((feature) => feature.contributions.filter((item) => item.memberId === member.id).map((item) => ({ feature, contribution: item })));
-  if (!contributions.length) return `<div class="profile-empty"><span class="empty-mark">${icon("arrow", 20)}</span><div><strong>Verified contributions are ready to add.</strong><p>Feature ownership stays unassigned until the team confirms who worked on each part.</p><a href="${pathFor(base, "#product")}">Explore SpendSense screens ${icon("arrow", 14)}</a></div></div>`;
-  return `<div class="contribution-list">${contributions.map(({ feature, contribution }) => `<article class="contribution-item"><span class="contribution-pin">${icon("arrow", 16)}</span><div><span class="eyebrow">SPENDSENSE</span><h3><a href="${pathFor(base, "#product")}">${escapeHtml(feature.title)} ${icon("arrow", 14)}</a></h3><p>${escapeHtml(contribution.detail || contribution.role)}</p></div></article>`).join("")}</div>`;
+  const contributions = features.flatMap((feature) =>
+    feature.contributions
+      .filter((item) => item.memberId === member.id)
+      .map((item) => ({ feature, contribution: item })),
+  );
+  if (!contributions.length) return '<p class="profile-empty">Confirmed SpendSense work will appear here.</p>';
+  const items = contributions.map(({ feature, contribution }, index) =>
+    '<article class="contribution-item"><span class="contribution-number">' + String(index + 1).padStart(2, "0") +
+    '</span><div class="contribution-copy"><h3><a href="' + pathFor(base, "app/") + '">' +
+    escapeHtml(contribution.title || feature.title) + " " + icon("arrow", 14) + "</a></h3>" +
+    (contribution.role ? '<p class="contribution-role">' + escapeHtml(contribution.role) + "</p>" : "") +
+    (contribution.detail ? "<p>" + escapeHtml(contribution.detail) + "</p>" : "") +
+    "</div></article>",
+  ).join("");
+  return '<div class="contribution-list">' + items + "</div>";
 }
-
 function cvBlock(member, base) {
-  if (!member.cvPdf) return `<div class="profile-empty cv-empty"><span class="cv-symbol">PDF</span><div><strong>Public CV not added</strong><p>Only an approved, public-facing PDF should be linked from this profile.</p></div></div>`;
+  if (!member.cvPdf) return `<p class="profile-empty">No public CV has been added.</p>`;
   const cv = pathFor(base, member.cvPdf);
-  const filename = `${member.name.replace(/[^a-z0-9]+/gi, "_")}_CV.pdf`;
-  return `<div class="cv-viewer"><div class="cv-actions"><a class="button button-primary" href="${cv}" download="${escapeHtml(filename)}">Download CV ${icon("arrow", 15)}</a><a class="button button-outline" href="${cv}" target="_blank" rel="noopener noreferrer">Open in a new tab ${icon("external", 14)}</a></div><object data="${cv}" type="application/pdf" aria-label="CV preview for ${escapeHtml(member.name)}"><p>PDF preview is not available. <a href="${cv}" target="_blank" rel="noopener noreferrer">Open the CV</a>.</p></object></div>`;
+  const filename = `${member.name.replace(/[^a-z0-9]+/gi, "_")}_${member.isMock ? "Sample_" : ""}CV.pdf`;
+  return '<div class="cv-preview"><h3 class="cv-preview-title">CV preview</h3>' +
+    '<iframe class="cv-preview-frame" src="' + escapeHtml(cv) + '#view=FitH" title="' + escapeHtml(member.name) + ' CV preview" loading="lazy"></iframe>' +
+    '<p class="cv-preview-note">If the preview does not load, use Open in a new tab or Download CV below.</p></div>' +
+    '<div class="cv-actions"><a class="button button-primary" href="' + escapeHtml(cv) + '" download="' + escapeHtml(filename) + '">Download CV ' + icon("arrow", 15) + '</a><a class="text-link" href="' + escapeHtml(cv) + '" target="_blank" rel="noopener noreferrer">Open in a new tab ' + icon("external", 14) + '</a></div>';
 }
 
 function renderProfile(member, base) {
   const number = member.id.slice(-2);
-  const skillTags = member.skills.length ? member.skills.map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`).join("") : `<span class="soft-note">Approved skills ready to add.</span>`;
-  const body = `<section class="profile-hero section-pad"><div class="wrap">
-    <a class="profile-back" href="${pathFor(base, "#team")}">${icon("arrow", 15)} Back to the team</a>
-    <div class="profile-panel">
-      <div class="profile-number" aria-hidden="true">${number}</div>
-      <div class="profile-intro">
-        <p class="eyebrow">SPENDSENSE TEAM · PORTFOLIO ${number}</p>
-        <span class="content-badge">INTRODUCTION PENDING</span>
-        <h1>${escapeHtml(member.name)}</h1>
-        <p class="profile-headline">${escapeHtml(member.headline)}</p>
-        <p class="profile-bio">${escapeHtml(member.bio)}</p>
-        <nav class="profile-jump" aria-label="Portfolio sections"><a href="#work">Work</a><a href="#projects">Projects</a><a href="#details">Profile details</a></nav>
-      </div>
-    </div>
-  </div></section>
-  <section class="profile-section section-pad" id="work"><div class="wrap profile-section-grid">
-    <div class="profile-section-title"><p class="eyebrow">01 · PROJECT WORK</p><h2>SpendSense contributions</h2></div>
-    <div class="profile-section-content">${profileContributions(member, base)}</div>
-  </div></section>
-  <section class="profile-section section-pad" id="projects"><div class="wrap profile-section-grid">
-    <div class="profile-section-title"><p class="eyebrow">02 · SELECTED WORK</p><h2>Projects & experiments</h2></div>
-    <div class="profile-section-content">${profileProjects(member)}</div>
-  </div></section>
-  <section class="profile-details-section section-pad" id="details"><div class="wrap profile-detail-grid">
-    <div class="profile-detail-block"><p class="eyebrow">03 · TOOLKIT</p><h2>Skills & technologies</h2><div class="tag-row">${skillTags}</div></div>
-    <div class="profile-detail-block"><p class="eyebrow">04 · CONNECT</p><h2>Find their work</h2><div class="contact-links">${profileLinks(member)}</div></div>
-    <div class="profile-detail-block"><p class="eyebrow">05 · DOCUMENTS</p><h2>Curriculum vitae</h2>${cvBlock(member, base)}</div>
-  </div></section>`;
-  return shell({ base, title: `${member.name} · SpendSense Team`, description: `${member.name}'s portfolio page for the SpendSense team hub.`, body, profileId: member.id });
+  const avatar = member.portrait
+    ? '<img class="profile-portrait" src="' + pathFor(base, member.portrait) + '" alt="Portrait of ' + escapeHtml(member.name) + '" loading="lazy">'
+    : '<span class="profile-number" aria-hidden="true">' + number + "</span>";
+  const skillTags = member.skills.length
+    ? member.skills.map((skill) => '<span class="tag">' + escapeHtml(skill) + "</span>").join("")
+    : '<p class="profile-empty">Approved skills will appear here.</p>';
+  const profileAreas = [
+    { id: "profile", label: "Profile" },
+    { id: "work", label: "Work" },
+    { id: "projects", label: "Projects" },
+    { id: "skills", label: "Skills" },
+    { id: "contact", label: "Contact" },
+  ];
+  const areaTabs = profileAreas.map((area, index) =>
+    '<button class="profile-tab' + (index === 0 ? ' is-active' : '') + '" type="button" role="tab" id="profile-tab-' + area.id +
+    '" aria-selected="' + (index === 0) + '" aria-controls="profile-panel-' + area.id + '" tabindex="' + (index === 0 ? '0' : '-1') +
+    '" data-profile-tab="' + area.id + '">' + area.label + '</button>',
+  ).join("");
+  const profileDots = profileAreas.map((area, index) =>
+    '<button class="profile-dot' + (index === 0 ? ' is-active' : '') + '" type="button" data-profile-dot="' + index +
+    '" aria-label="Show ' + area.label + ' page"' + (index === 0 ? ' aria-current="step"' : '') + '><span></span></button>',
+  ).join("");
+  const areaPanels =
+    '<div class="profile-slide profile-slide-intro" id="profile-panel-profile" role="tabpanel" aria-labelledby="profile-tab-profile" data-profile-slide="profile">' +
+      '<header class="profile-hero" role="region" aria-label="' + escapeHtml(member.name) + ' profile information" tabindex="0"><div class="profile-visual">' + avatar +
+        '<span class="profile-visual-label">Team member ' + number + "</span></div>" +
+        '<div class="profile-intro">' +
+          (member.isMock ? '<span class="sample-badge">Sample profile</span>' : "") +
+          "<h1>" + escapeHtml(member.name) + "</h1>" +
+          '<p class="profile-headline">' + escapeHtml(member.headline) + "</p>" +
+          '<p class="profile-bio">' + escapeHtml(member.bio) + "</p>" +
+        "</div></header>" +
+    "</div>" +
+    '<div class="profile-slide" id="profile-panel-work" role="tabpanel" aria-labelledby="profile-tab-work" data-profile-slide="work"><section class="profile-section" tabindex="0">' +
+      '<header class="profile-section-heading"><h2>SpendSense work</h2><a class="section-jump" href="' + pathFor(base, "app/") + '">Explore the app ' + icon("arrow", 14) + "</a></header>" +
+      profileContributions(member, base) +
+    "</section></div>" +
+    '<div class="profile-slide" id="profile-panel-projects" role="tabpanel" aria-labelledby="profile-tab-projects" data-profile-slide="projects"><section class="profile-section" tabindex="0">' +
+      '<header class="profile-section-heading"><h2>Projects</h2></header>' + profileProjects(member) +
+    "</section></div>" +
+    '<div class="profile-slide profile-slide-fill" id="profile-panel-skills" role="tabpanel" aria-labelledby="profile-tab-skills" data-profile-slide="skills"><section class="profile-section profile-fill-section profile-skills" tabindex="0">' +
+      '<header class="profile-section-heading"><h2>Skills</h2></header><div class="tag-row">' + skillTags + "</div>" +
+    "</section></div>" +
+    '<div class="profile-slide profile-slide-fill" id="profile-panel-contact" role="tabpanel" aria-labelledby="profile-tab-contact" data-profile-slide="contact"><section class="profile-section profile-fill-section profile-contact" tabindex="0">' +
+      '<header class="profile-section-heading"><h2>Find me</h2></header><div class="contact-links">' + profileLinks(member) + "</div>" + cvBlock(member, base) +
+    "</section></div>";
+  const body = '<section class="page profile-page wrap">' +
+    '<a class="profile-back" href="' + pathFor(base) + '">' + icon("arrow", 15) + "All teammates</a>" +
+    '<div class="profile-content">' +
+      '<nav class="profile-tabs" role="tablist" aria-label="' + escapeHtml(member.name) + ' portfolio areas">' + areaTabs + "</nav>" +
+      '<div class="profile-carousel" data-profile-carousel><div class="profile-pages" data-profile-pages>' + areaPanels +
+      '</div><nav class="profile-pager" aria-label="' + escapeHtml(member.name) + ' page navigation">' + profileDots + "</nav></div>" +
+    "</div></section>";
+  return shell({
+    base,
+    title: member.name + " | SpendSense Team",
+    description: member.name + "'s portfolio page for the SpendSense team hub.",
+    body,
+    active: "team",
+    profileId: member.id,
+    pageData: { members: [member] },
+  });
 }
-
 export function renderPage(pathname, base) {
-  const slugMatch = pathname.match(/\/team\/([^/]+)\/?$/);
+  const relativePath = pathname === base || pathname === base.slice(0, -1)
+    ? "/"
+    : pathname.startsWith(base) ? `/${pathname.slice(base.length)}` : pathname;
+  const normalizedPath = relativePath.endsWith("/") ? relativePath : `${relativePath}/`;
+  const slugMatch = normalizedPath.match(/^\/team\/([^/]+)\/$/);
   if (slugMatch) {
     const member = members.find((item) => item.slug === decodeURIComponent(slugMatch[1]));
     if (member) return renderProfile(member, base);
     return renderNotFound(base);
   }
-  if (pathname === "/" || pathname.endsWith("/index.html") || pathname === base || pathname === base.slice(0, -1)) return renderHome(base);
+  if (normalizedPath === "/app/") return renderAppPage(base);
+  if (normalizedPath === "/") return renderTeamPage(base);
   return renderNotFound(base);
 }
 
 export function renderNotFound(base) {
-  const body = `<section class="not-found wrap"><span class="not-found-number">404</span><p class="eyebrow">PAGE NOT FOUND</p><h1>This page isn't in the team hub.</h1><p>Head back to the team directory or explore the SpendSense app screens.</p><a class="button button-primary" href="${pathFor(base)}">Back to the team ${icon("arrow", 16)}</a></section>`;
-  return shell({ base, title: `Page not found · ${site.name}`, description: "This SpendSense team hub page could not be found.", body });
+  const body = `<section class="page not-found wrap"><span class="not-found-number">404</span><h1>This page isn't here.</h1><p>Choose a team profile or take a look at the app screens.</p><div class="not-found-links"><a class="button button-primary" href="${pathFor(base)}">Team page ${icon("arrow", 15)}</a><a class="text-link" href="${pathFor(base, "app/")}">View the app ${icon("arrow", 15)}</a></div></section>`;
+  return shell({ base, title: `Page not found | ${site.name}`, description: "This SpendSense team hub page could not be found.", body });
 }
 
 export { members, features, productScreenshots, site };

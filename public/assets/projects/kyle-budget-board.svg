@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Budget Board sample project</title>
+  <desc id="desc">A sample budgeting dashboard with a budget summary, progress ring, and upcoming payments.</desc>
+  <rect width="1200" height="680" fill="#e4f3ed"/>
+  <rect x="24" y="24" width="1152" height="632" rx="28" fill="#fff" stroke="#0c1b2a" stroke-width="6"/>
+  <text x="66" y="98" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="42" font-weight="800">Budget Board</text>
+  <rect x="942" y="51" width="190" height="46" rx="23" fill="#ffe1eb" stroke="#b92f69" stroke-width="2"/>
+  <text x="976" y="81" fill="#b92f69" font-family="system-ui, sans-serif" font-size="18" font-weight="800" letter-spacing="2">SAMPLE PROJECT</text>
+  <rect x="66" y="132" width="510" height="254" rx="22" fill="#fff5cc"/>
+  <text x="98" y="183" fill="#716c7a" font-family="system-ui, sans-serif" font-size="18" font-weight="700" letter-spacing="2">MONTHLY BUDGET</text>
+  <text x="98" y="243" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="42" font-weight="800">R 3 480 left</text>
+  <rect x="98" y="280" width="440" height="22" rx="11" fill="#e4f3ed"/>
+  <rect x="98" y="280" width="286" height="22" rx="11" fill="#b92f69"/>
+  <text x="98" y="348" fill="#716c7a" font-family="system-ui, sans-serif" font-size="20">Sample monthly spending progress</text>
+  <rect x="606" y="132" width="526" height="254" rx="22" fill="#f3faf6"/>
+  <circle cx="744" cy="259" r="75" fill="none" stroke="#d9e9e2" stroke-width="22"/>
+  <path d="M744 184a75 75 0 1 1-70 102" fill="none" stroke="#ff6397" stroke-width="22" stroke-linecap="round"/>
+  <text x="717" y="267" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="32" font-weight="800">68%</text>
+  <text x="858" y="229" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="25" font-weight="800">Savings goal</text>
+  <text x="858" y="267" fill="#716c7a" font-family="system-ui, sans-serif" font-size="19">Sample progress view</text>
+  <rect x="66" y="420" width="1066" height="188" rx="22" fill="#fff" stroke="#d9e9e2" stroke-width="3"/>
+  <text x="98" y="471" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="25" font-weight="800">Coming up</text>
+  <circle cx="112" cy="526" r="17" fill="#ffe1eb"/>
+  <text x="149" y="535" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="21" font-weight="700">Internet bill</text>
+  <text x="990" y="535" fill="#b92f69" font-family="system-ui, sans-serif" font-size="22" font-weight="800">R 450</text>
+  <line x1="96" y1="562" x2="1098" y2="562" stroke="#d9e9e2" stroke-width="3"/>
+  <circle cx="112" cy="582" r="17" fill="#ffdc82"/>
+  <text x="149" y="591" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="21" font-weight="700">Transport pass</text>
+  <text x="990" y="591" fill="#b92f69" font-family="system-ui, sans-serif" font-size="22" font-weight="800">R 320</text>
+</svg>

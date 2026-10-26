@@ -1,6 +1,9 @@
+import { members } from "./teamProfiles.js";
+export { members };
+
 /**
- * Public site content. Replace placeholders only with information approved by
- * the SpendSense team. Feature ownership is intentionally empty until confirmed.
+ * Shared public site content. Team-specific profile data is loaded from the
+ * key-value files in team-members/ during the static build.
  */
 export const site = {
   name: "SpendSense",
@@ -16,76 +19,39 @@ export const productScreenshots = [
   {
     id: "dashboard",
     title: "Home",
-    heading: "Your progress hub",
-    description: "A quick look at score, streaks, payments coming up, and the next step in the app.",
     image: "assets/product/dashboard.png",
     alt: "SpendSense mobile dashboard with credit score, knowledge streak, progress cards, and upcoming payments.",
   },
   {
     id: "calendar",
     title: "Calendar",
-    heading: "Your money calendar",
-    description: "A month view that brings budgets, paid items, upcoming obligations, and missed payments together.",
     image: "assets/product/calendar.png",
     alt: "SpendSense mobile calendar with monthly budget summary, calendar dates, and payment list.",
   },
   {
     id: "simulation",
     title: "Simulation",
-    heading: "Practise with a simulated month",
-    description: "A 30-day money challenge with a day-by-day agenda and fictional obligations.",
     image: "assets/product/simulation.png",
     alt: "SpendSense simulated month screen with a daily agenda and upcoming fictional obligations.",
   },
   {
     id: "quests",
     title: "Quests",
-    heading: "Learn through small quests",
-    description: "Daily quiz and topic paths pair money learning with progress and rewards.",
     image: "assets/product/quests.png",
     alt: "SpendSense quests screen showing the learning path, daily quiz, streak, and topic progress.",
   },
   {
     id: "friends",
     title: "Friends",
-    heading: "Build money habits together",
-    description: "The Friends Hub brings together friend requests, a leaderboard, and shared challenges.",
     image: "assets/product/friends.png",
     alt: "SpendSense Friends Hub with friends, a friend request, leaderboard, and challenge options.",
   },
   {
     id: "mascot",
     title: "Mascot",
-    heading: "Meet Spendy",
-    description: "The mascot home brings the character, outfits, and progress into one playful space.",
     image: "assets/product/mascot.png",
     alt: "SpendSense mascot home with Spendy wearing overalls and a sweatband.",
   },
-];
-
-function placeholderMember(number) {
-  const suffix = String(number).padStart(2, "0");
-  return {
-    id: `member-${suffix}`,
-    slug: `team-member-${suffix}`,
-    name: `Team member ${suffix}`,
-    headline: "Role pending team approval",
-    bio: "This profile is ready for the developer’s approved introduction, experience and portfolio details.",
-    isPlaceholder: true,
-    portrait: "",
-    skills: [],
-    projects: [],
-    links: { github: "", linkedin: "", website: "", email: "" },
-    cvPdf: "",
-  };
-}
-
-export const members = [
-  placeholderMember(1),
-  placeholderMember(2),
-  placeholderMember(3),
-  placeholderMember(4),
-  placeholderMember(5),
 ];
 
 // These are topics suggested by the implementation brief, not confirmed product features.
@@ -141,6 +107,21 @@ export const features = [
     contributions: [],
   },
 ];
+
+for (const member of members) {
+  for (const contribution of member.contributions) {
+    const feature = features.find((entry) => entry.id === contribution.featureId);
+    if (!feature) throw new Error(`Unknown feature "${contribution.featureId}" in ${member.name}'s profile.`);
+    feature.contributions.push({
+      memberId: member.id,
+      title: contribution.title,
+      role: contribution.role,
+      detail: contribution.detail,
+    });
+  }
+  delete member.contributions;
+  delete member.order;
+}
 
 // Example headings from the plan, shown as a replaceable scaffold rather than project history.
 export const milestones = [

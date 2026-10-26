@@ -1,14 +1,9 @@
 
 const base = window.SITE_BASE || "/";
-const data = window.SITE_DATA || { members: [], productScreenshots: [] };
+const data = { members: [], productScreenshots: [], ...(window.SITE_DATA || {}) };
 
 const tabs = Array.from(document.querySelectorAll("[data-product-tab]"));
 const productImage = document.querySelector("[data-product-image]");
-const productHeading = document.querySelector("[data-product-heading]");
-const productDescription = document.querySelector("[data-product-description]");
-const productCount = document.querySelector("[data-product-count]");
-const productCaption = document.querySelector("[data-product-caption]");
-const fullImageLink = document.querySelector("[data-product-full-image]");
 const productError = document.querySelector("[data-product-error]");
 
 function selectProduct(tab) {
@@ -23,19 +18,10 @@ function selectProduct(tab) {
     item.tabIndex = active ? 0 : -1;
   });
 
-  const index = screens.indexOf(screen);
-  productHeading.textContent = screen.heading;
-  productDescription.textContent = screen.description;
-  productCount.innerHTML = String(index + 1).padStart(2, "0") + ' <span>/ ' + String(screens.length).padStart(2, "0") + ' SCREENS</span>';
   productImage.alt = screen.alt;
   productImage.src = base + screen.image;
   productImage.hidden = false;
   if (productError) productError.hidden = true;
-  if (productCaption) productCaption.textContent = "SPENDSENSE APP · " + screen.title.toUpperCase();
-  if (fullImageLink) {
-    fullImageLink.href = base + screen.image;
-    fullImageLink.setAttribute("aria-label", "Open full " + screen.title + " screenshot in a new tab");
-  }
   document.querySelector("#product-screen")?.setAttribute("aria-labelledby", tab.id);
 }
 
@@ -50,6 +36,118 @@ tabs.forEach((tab, index) => {
     tabs[next]?.click();
   });
 });
+
+const profileTabs = Array.from(document.querySelectorAll("[data-profile-tab]"));
+const profilePages = document.querySelector("[data-profile-pages]");
+const profileSlides = Array.from(document.querySelectorAll("[data-profile-slide]"));
+const profileDots = Array.from(document.querySelectorAll("[data-profile-dot]"));
+const profileScrollCards = Array.from(document.querySelectorAll(".profile-section, .profile-slide-intro .profile-hero"));
+let programmaticProfileIndex = null;
+let profileScrollTimer;
+let profileScrollFrameQueued = false;
+
+profileScrollCards.forEach((card) => {
+  let fadeTimer;
+  card.addEventListener("scroll", () => {
+    card.classList.add("is-scrolling");
+    window.clearTimeout(fadeTimer);
+    fadeTimer = window.setTimeout(() => card.classList.remove("is-scrolling"), 800);
+  }, { passive: true });
+});
+
+function nearestProfileIndex() {
+  if (!profilePages) return 0;
+  return Math.max(0, Math.min(Math.round(profilePages.scrollLeft / profilePages.clientWidth), profileSlides.length - 1));
+}
+
+function finishProgrammaticProfileScroll() {
+  if (programmaticProfileIndex === null) return;
+  const index = programmaticProfileIndex;
+  programmaticProfileIndex = null;
+  clearTimeout(profileScrollTimer);
+  selectProfileArea(index);
+}
+
+function updateProfileFromScroll() {
+  if (programmaticProfileIndex !== null) return;
+  selectProfileArea(nearestProfileIndex());
+}
+
+function selectProfileArea(index, shouldScroll = false) {
+  if (!profileTabs.length || !profileSlides.length) return;
+  const selectedIndex = Math.max(0, Math.min(index, profileTabs.length - 1));
+  profileTabs.forEach((tab, tabIndex) => {
+    const active = tabIndex === selectedIndex;
+    tab.classList.toggle("is-active", active);
+    tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+  });
+  profileSlides.forEach((slide, slideIndex) => {
+    const active = slideIndex === selectedIndex;
+    slide.setAttribute("aria-hidden", String(!active));
+    slide.inert = !active;
+  });
+  profileDots.forEach((dot, dotIndex) => {
+    const active = dotIndex === selectedIndex;
+    dot.classList.toggle("is-active", active);
+    if (active) dot.setAttribute("aria-current", "step");
+    else dot.removeAttribute("aria-current");
+  });
+
+  if (!profilePages || !profileSlides[selectedIndex]) return;
+  if (shouldScroll) {
+    const offset = profileSlides[selectedIndex].offsetLeft - profileSlides[0].offsetLeft;
+    if (Math.abs(offset - profilePages.scrollLeft) >= 1) {
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      programmaticProfileIndex = selectedIndex;
+      profilePages.scrollTo({ left: offset, behavior });
+      return;
+    }
+  }
+}
+
+profileTabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => selectProfileArea(index, true));
+  tab.addEventListener("keydown", (event) => {
+    if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? profileTabs.length - 1 :
+      (index + (event.key === "ArrowRight" ? 1 : -1) + profileTabs.length) % profileTabs.length;
+    profileTabs[next]?.focus();
+    selectProfileArea(next, true);
+  });
+});
+
+profileDots.forEach((dot) => {
+  dot.addEventListener("click", () => selectProfileArea(Number(dot.dataset.profileDot), true));
+});
+
+if (profilePages && profileSlides.length && profileTabs.length) {
+  profilePages.addEventListener("scroll", () => {
+    if (programmaticProfileIndex !== null) {
+      clearTimeout(profileScrollTimer);
+      profileScrollTimer = window.setTimeout(finishProgrammaticProfileScroll, 180);
+      return;
+    }
+    if (profileScrollFrameQueued) return;
+    profileScrollFrameQueued = true;
+    window.requestAnimationFrame(() => {
+      profileScrollFrameQueued = false;
+      updateProfileFromScroll();
+    });
+  }, { passive: true });
+  profilePages.addEventListener("scrollend", () => {
+    if (programmaticProfileIndex !== null) finishProgrammaticProfileScroll();
+    else updateProfileFromScroll();
+  });
+
+  selectProfileArea(0);
+
+  window.addEventListener("resize", () => {
+    const activeIndex = profileTabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    selectProfileArea(activeIndex < 0 ? 0 : activeIndex, true);
+  });
+}
 
 productImage?.addEventListener("error", () => {
   productImage.hidden = true;

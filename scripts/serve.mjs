@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../dist");
-const contentTypes = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json; charset=utf-8", ".pdf": "application/pdf", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp" };
+const contentTypes = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json; charset=utf-8", ".pdf": "application/pdf", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".woff": "font/woff", ".woff2": "font/woff2" };
 const server = http.createServer(async (request, response) => {
   try {
     const url = new URL(request.url || "/", "http://localhost");
@@ -24,5 +24,25 @@ const server = http.createServer(async (request, response) => {
     response.end("Bad request");
   }
 });
-const port = Number(process.env.PORT || 4173);
-server.listen(port, "127.0.0.1", () => console.log(`SpendSense preview: http://127.0.0.1:${port}`));
+const requestedPort = Number(process.env.PORT || 4173);
+let usingFallbackPort = false;
+
+server.on("listening", () => {
+  const address = server.address();
+  console.log(`SpendSense local preview: http://127.0.0.1:${address.port}/`);
+  console.log(`Team page: http://127.0.0.1:${address.port}/`);
+  console.log(`App page:  http://127.0.0.1:${address.port}/app/`);
+});
+
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE" && !usingFallbackPort) {
+    usingFallbackPort = true;
+    console.log(`Port ${requestedPort} is already in use; choosing an available local port.`);
+    server.listen(0, "127.0.0.1");
+    return;
+  }
+  console.error(error);
+  process.exitCode = 1;
+});
+
+server.listen(requestedPort, "127.0.0.1");

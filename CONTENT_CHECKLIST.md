@@ -1,6 +1,6 @@
 # SpendSense content approval checklist
 
-Use this before replacing any visible placeholder in `src/data/content.js` or adding a public asset.
+Use this before replacing profile placeholders in `team-members/<name>/profile.env`, editing shared content in `src/data/content.js`, or adding a public asset.
 
 ## Each of the five developers
 

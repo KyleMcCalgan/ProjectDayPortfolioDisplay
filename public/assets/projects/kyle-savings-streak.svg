@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Savings Streak sample project</title>
+  <desc id="desc">A sample savings habit screen with a weekly streak, a savings target, and progress dots.</desc>
+  <rect width="1200" height="680" fill="#fff0c9"/>
+  <rect x="24" y="24" width="1152" height="632" rx="28" fill="#fff" stroke="#0c1b2a" stroke-width="6"/>
+  <text x="66" y="98" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="42" font-weight="800">Savings Streak</text>
+  <rect x="942" y="51" width="190" height="46" rx="23" fill="#ffe1eb" stroke="#b92f69" stroke-width="2"/>
+  <text x="976" y="81" fill="#b92f69" font-family="system-ui, sans-serif" font-size="18" font-weight="800" letter-spacing="2">SAMPLE PROJECT</text>
+  <rect x="66" y="132" width="1066" height="260" rx="24" fill="#ffe1eb"/>
+  <text x="104" y="194" fill="#b92f69" font-family="system-ui, sans-serif" font-size="18" font-weight="800" letter-spacing="2">WEEKLY SAVINGS HABIT</text>
+  <text x="104" y="258" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="42" font-weight="800">4 day streak</text>
+  <text x="104" y="300" fill="#716c7a" font-family="system-ui, sans-serif" font-size="20">A small sample of daily progress feedback.</text>
+  <g stroke="#0c1b2a" stroke-width="4">
+    <circle cx="624" cy="254" r="31" fill="#ffdc82"/><circle cx="710" cy="254" r="31" fill="#ffdc82"/>
+    <circle cx="796" cy="254" r="31" fill="#ffdc82"/><circle cx="882" cy="254" r="31" fill="#ffdc82"/>
+    <circle cx="968" cy="254" r="31" fill="#fff"/><circle cx="1054" cy="254" r="31" fill="#fff"/>
+  </g>
+  <path d="m613 254 8 8 15-18M699 254l8 8 15-18M785 254l8 8 15-18M871 254l8 8 15-18" fill="none" stroke="#0c1b2a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="66" y="426" width="510" height="176" rx="22" fill="#f3faf6" stroke="#d9e9e2" stroke-width="3"/>
+  <text x="100" y="482" fill="#716c7a" font-family="system-ui, sans-serif" font-size="18" font-weight="700" letter-spacing="2">SAMPLE SAVINGS GOAL</text>
+  <text x="100" y="538" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="34" font-weight="800">R 1 250 / R 2 000</text>
+  <rect x="100" y="560" width="430" height="18" rx="9" fill="#d9e9e2"/>
+  <rect x="100" y="560" width="269" height="18" rx="9" fill="#b92f69"/>
+  <rect x="606" y="426" width="526" height="176" rx="22" fill="#fff5cc"/>
+  <text x="642" y="482" fill="#716c7a" font-family="system-ui, sans-serif" font-size="18" font-weight="700" letter-spacing="2">NEXT CHECK-IN</text>
+  <text x="642" y="538" fill="#0c1b2a" font-family="system-ui, sans-serif" font-size="32" font-weight="800">Tomorrow</text>
+  <text x="642" y="574" fill="#716c7a" font-family="system-ui, sans-serif" font-size="19">Keep your sample streak going.</text>
+</svg>
