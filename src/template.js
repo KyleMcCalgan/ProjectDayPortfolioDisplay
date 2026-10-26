@@ -214,7 +214,7 @@ function profileLinks(member) {
   ).join("");
 }
 
-function profileProjects(member) {
+function profileProjects(member, base) {
   if (!member.projects.length) return '<p class="profile-empty">Projects will appear here when they are ready to share.</p>';
   const cards = member.projects.map((project, index) => {
     const technologies = (project.technologies || []).map((tech) =>
@@ -229,13 +229,16 @@ function profileProjects(member) {
     const responsibility = project.responsibility
       ? '<p class="responsibility"><strong>Role:</strong> ' + escapeHtml(project.responsibility) + "</p>"
       : "";
-    const screenshot = project.screenshots?.[0];
-    const projectImage = screenshot
-      ? '<img src="' + pathFor(base, screenshot.src) + '" alt="' + escapeHtml(screenshot.alt) + '" loading="lazy">'
+    const screenshots = project.screenshots || [];
+    const projectImage = screenshots.length
+      ? screenshots.map((shot) => '<img src="' + pathFor(base, shot.src) + '" alt="' + escapeHtml(shot.alt) + '" loading="lazy">').join("")
       : '<span class="project-image-fallback">' + icon("wallet", 23) + "<span>Project preview</span></span>";
+    const imageClass = screenshots.length > 1
+      ? "project-image-placeholder has-multiple" + (project.screenshotLayout === "side-by-side" ? " is-side-by-side" : "")
+      : "project-image-placeholder";
 
     return '<article class="project-item">' +
-      '<div class="project-image-placeholder">' + projectImage + "</div>" +
+      '<div class="' + imageClass + '">' + projectImage + "</div>" +
       '<div class="project-item-copy"><div class="project-title-row"><h3>' + escapeHtml(project.title) + '</h3><span class="project-index">' + String(index + 1).padStart(2, "0") + "</span></div>" +
       "<p>" + escapeHtml(project.summary) + "</p>" + responsibility +
       '<div class="tag-row">' + technologies + "</div>" +
@@ -308,7 +311,7 @@ function renderProfile(member, base) {
       profileContributions(member, base) +
     "</section></div>" +
     '<div class="profile-slide" id="profile-panel-projects" role="tabpanel" aria-labelledby="profile-tab-projects" data-profile-slide="projects"><section class="profile-section" tabindex="0">' +
-      '<header class="profile-section-heading"><h2>Projects</h2></header>' + profileProjects(member) +
+      '<header class="profile-section-heading"><h2>Projects</h2></header>' + profileProjects(member, base) +
     "</section></div>" +
     '<div class="profile-slide profile-slide-fill" id="profile-panel-skills" role="tabpanel" aria-labelledby="profile-tab-skills" data-profile-slide="skills"><section class="profile-section profile-fill-section profile-skills" tabindex="0">' +
       '<header class="profile-section-heading"><h2>Skills</h2></header><div class="tag-row">' + skillTags + "</div>" +

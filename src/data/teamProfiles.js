@@ -101,24 +101,28 @@ async function loadMember(folderName) {
   const portraitFile = configuredPortraitFile || photoFiles[0] || "";
 
   const projects = indexedGroups(entries, "PROJECT").map(([, fields]) => {
-    const screenshotFile = fields.SCREENSHOT || "";
-    if (screenshotFile && (path.basename(screenshotFile) !== screenshotFile || /[\\/]/.test(screenshotFile))) {
-      throw new Error("PROJECT_SCREENSHOT must be a filename inside " + folderName + "/projects.");
-    }
-    if (screenshotFile && !/\.(jpe?g|png|webp|svg)$/i.test(screenshotFile)) {
-      throw new Error("Project screenshots must be JPG, PNG, WebP, or SVG images in " + folderName + "/projects.");
+    const screenshotFiles = list(fields.SCREENSHOT);
+    const screenshotAlts = (fields.SCREENSHOT_ALT || "").split("|").map((item) => item.trim());
+    for (const screenshotFile of screenshotFiles) {
+      if (path.basename(screenshotFile) !== screenshotFile || /[\\/]/.test(screenshotFile)) {
+        throw new Error("PROJECT_SCREENSHOT must be filenames inside " + folderName + "/projects.");
+      }
+      if (!/\.(jpe?g|png|webp|svg)$/i.test(screenshotFile)) {
+        throw new Error("Project screenshots must be JPG, PNG, WebP, or SVG images in " + folderName + "/projects.");
+      }
     }
     return {
       title: fields.TITLE || "",
       summary: fields.SUMMARY || "",
       responsibility: fields.RESPONSIBILITY || "",
       technologies: list(fields.TECHNOLOGIES),
+      screenshotLayout: fields.SCREENSHOT_LAYOUT === "side-by-side" ? "side-by-side" : "stacked",
       repoUrl: fields.REPO_URL || "",
       demoUrl: fields.DEMO_URL || "",
-      screenshots: screenshotFile ? [{
+      screenshots: screenshotFiles.map((screenshotFile, index) => ({
         src: `assets/projects/${slug}/${screenshotFile}`,
-        alt: fields.SCREENSHOT_ALT || `${fields.TITLE || name} project preview`,
-      }] : [],
+        alt: screenshotAlts[index] || `${fields.TITLE || name} project preview`,
+      })),
     };
   });
 

@@ -716,3 +716,17 @@ body[data-member-id] .site-footer { display: none; }
   .profile-pager { display: none; }
   .profile-contact .cv-actions { margin-top: 0; }
 }
+
+/* Projects with more than one screenshot show them stacked (side by side on narrow cards). */
+.project-image-placeholder.has-multiple { grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 2px; background: var(--ink); }
+.project-image-placeholder.has-multiple img { min-height: 0; height: 100%; }
+@media (max-width: 680px) {
+  .project-image-placeholder.has-multiple { grid-template-rows: none; grid-template-columns: repeat(2, minmax(0, 1fr)); aspect-ratio: 16 / 7; }
+}
+
+/* Portrait phone screenshots sit side by side and show the top of each screen. */
+.project-image-placeholder.has-multiple.is-side-by-side { grid-template-rows: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; min-height: 260px; }
+.project-image-placeholder.has-multiple.is-side-by-side img { object-position: top; }
+@media (max-width: 680px) {
+  .project-image-placeholder.has-multiple.is-side-by-side { aspect-ratio: auto; height: 300px; min-height: 0; }
+}

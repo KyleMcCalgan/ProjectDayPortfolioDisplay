@@ -192,21 +192,25 @@ function renderProjectImages() {
   const member = data.members.find((entry) => entry.id === document.body.dataset.memberId);
   if (!member) return;
   member.projects?.forEach((project, index) => {
-    const screenshot = project.screenshots?.[0];
-    const source = typeof screenshot === "string" ? screenshot : screenshot?.src;
+    const screenshots = (project.screenshots || []).filter(Boolean);
     const slot = document.querySelectorAll(".project-image-placeholder")[index];
-    if (!source || !slot) return;
-    const image = document.createElement("img");
-    image.src = base + source.replace(/^\/+/, "");
-    image.alt = typeof screenshot === "object" && screenshot.alt ? screenshot.alt : project.title + " project screenshot";
-    image.loading = "lazy";
-    image.addEventListener("error", () => {
-      const missing = document.createElement("small");
-      missing.className = "image-unavailable";
-      missing.textContent = "Project image unavailable.";
-      image.replaceWith(missing);
-    }, { once: true });
-    slot.replaceChildren(image);
+    if (!screenshots.length || !slot) return;
+    slot.classList.toggle("has-multiple", screenshots.length > 1);
+    slot.classList.toggle("is-side-by-side", screenshots.length > 1 && project.screenshotLayout === "side-by-side");
+    slot.replaceChildren(...screenshots.map((screenshot) => {
+      const source = typeof screenshot === "string" ? screenshot : screenshot.src;
+      const image = document.createElement("img");
+      image.src = base + source.replace(/^\/+/, "");
+      image.alt = typeof screenshot === "object" && screenshot.alt ? screenshot.alt : project.title + " project screenshot";
+      image.loading = "lazy";
+      image.addEventListener("error", () => {
+        const missing = document.createElement("small");
+        missing.className = "image-unavailable";
+        missing.textContent = "Project image unavailable.";
+        image.replaceWith(missing);
+      }, { once: true });
+      return image;
+    }));
   });
 }
 
