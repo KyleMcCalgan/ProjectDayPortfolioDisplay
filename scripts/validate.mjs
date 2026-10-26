@@ -43,7 +43,7 @@ for (const html of [rootHtml, appHtml]) {
 assert.match(rootHtml, /id="team"/);
 assert.doesNotMatch(rootHtml, /data-product-tab=/, "The team directory and app gallery belong on separate pages.");
 assert.match(appHtml, /role="tablist" aria-label="SpendSense app screens"/);
-assert.match(appHtml, /id="product-screen"/);
+assert.match(appHtml, /data-product-pages/);
 assert.doesNotMatch(rootHtml + appHtml, /class="eyebrow"/, "Page headings should not repeat eyebrow labels.");
 assert.doesNotMatch(rootHtml + appHtml, /John Doe|Jane Doe|placeholder@|example\.com/i, "No fictitious identities or contact links should ship.");
 
@@ -63,7 +63,10 @@ for (const slug of sourceSlugs) {
 }
 
 for (const screen of productScreenshots) {
-  assert.ok(appHtml.includes(`"id":"${screen.id}"`), `The app gallery data is missing ${screen.id}.`);
+  assert.ok(appHtml.includes(`data-product-tab="${screen.id}"`), `The app gallery is missing the ${screen.id} tab.`);
+  assert.ok(appHtml.includes(`id="product-panel-${screen.id}"`), `The app gallery is missing the ${screen.id} panel.`);
+  assert.ok(appHtml.includes(`aria-controls="product-panel-${screen.id}"`), `The ${screen.id} tab is not connected to its panel.`);
+  assert.ok(appHtml.includes(`src="${builtBase}${screen.image}"`), `The app gallery is missing the ${screen.id} image.`);
   await fs.access(path.join(dist, "assets", screen.image.replace(/^assets\//, "")));
 }
 for (const asset of ["mascot-neutral.svg", "overalls.svg", "sweat-band.svg"]) {
